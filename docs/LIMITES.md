@@ -1,14 +1,22 @@
-# Limites connues (étapes 1 à 4)
+# Limites connues (étapes 1 à 5)
 
 ## Contenu
 - **21 notions sont disponibles** sur 280 (Python 1, SQL 7, LLM 5, BI 4, ML 4), 6 autres sont « testées » via les projets. La matrice de couverture l'indique honnêtement.
-- Quatre projets sont jouables (SQL, ML, LLM, BI). La partie conception du projet PME est prévue ; le projet Python, le projet transversal, le mode entretien et le tuteur IA ne sont pas encore implémentés ; l'interface l'indique là où ils apparaissent.
+- Quatre projets sont jouables (SQL, ML, LLM, BI). La partie conception du projet PME est prévue ; le projet Python, le projet transversal et le mode entretien complet ne sont pas encore implémentés ; l'interface l'indique là où ils apparaissent.
 
 ## Laboratoires de l'étape 4
 - **LLM** : aucun modèle de langage n'est appelé. La « réponse » est produite par un **modèle simulé** (extraction de la phrase la plus pertinente), signalé partout où il apparaît. Découpage, recherche, contexte, citations, abstention et évaluation sont réels. La recherche est **lexicale** (pas d'embeddings) : elle rate les synonymes et la conjugaison, ce que la leçon montre et mesure (4 silences à tort sur 13 questions).
 - **BI** : Power BI ne s'exécute pas dans un navigateur. Les mesures sont calculées en SQL (PostgreSQL) et le DAX est **affiché sans être exécuté** ; l'équivalence est expliquée (DIVIDE ↔ NULLIF, ALL ↔ fonction de fenêtre) mais n'est pas prouvée par un moteur DAX. Le rapport Power BI du projet est en **auto-évaluation** : SkillForge ne lit pas le fichier .pbix et ne compte pas ces cases dans la maîtrise.
 - **ML** : scikit-learn 1.8 tourne dans Pyodide (~30 Mo au premier usage). Les probabilités du projet sont recalculées par les tests ; une autre version de scikit-learn pourrait donner des écarts au-delà de la tolérance (0,002). Le calcul de coût suppose que l'offre retient chaque abonné détecté : la leçon l'écrit explicitement.
 - Le mini-diagnostic de l'onboarding ne couvre que Python.
+
+## Tuteur et révision (étape 5)
+- **Tuteur local** : il n'invente rien, mais il ne « comprend » pas ton code ; il s'appuie sur les tests, les étiquettes d'erreur et des textes rédigés. Quand aucun test ne pose d'étiquette, il ne peut que pointer le cas échoué et poser une question générale.
+- **Tuteur IA** : disponible seulement avec le serveur SkillForge et une clé configurée côté serveur (`ANTHROPIC_API_KEY`) ; la version statique n'en a pas. Il peut se tromper : ses réponses sont étiquetées, placées sous les résultats testés, et signalables. Il n'a pas été essayé avec une vraie clé pendant le développement (requête vérifiée par tests, pas la qualité des réponses). Les fallbacks côté serveur sont activés : une demande refusée par le modèle principal peut être traitée par un modèle de repli.
+- Les limites de débit du serveur sont en mémoire et par adresse IP (pas de comptes avant l'étape 7).
+- **Variantes** : 4 tests de validation sur 7 en ont ; les autres révisions reprennent l'exercice d'origine.
+- Mini-test de rappel et cases de fiches : auto-évaluation, jamais comptée comme preuve.
+- Signalements : stockés dans le navigateur et inclus dans l'export ; personne ne les reçoit encore.
 
 ## Exécution Python (navigateur)
 - **Mémoire** : pas de limite fine ; seule celle du navigateur s'applique (WebAssembly 32 bits, 4 Go max). Un programme qui alloue énormément peut faire planter le worker ; il est alors recréé.

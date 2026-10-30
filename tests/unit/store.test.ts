@@ -89,3 +89,34 @@ describe("Store — tentatives, export, suppression", () => {
     expect((await s.getActivity())["2026-10-30"]).toBe(30);
   });
 });
+
+describe("Store — favoris et notes", () => {
+  it("un favori s'ajoute puis se retire", async () => {
+    const s = await open();
+    expect(await s.toggleFavorite({ key: "lecon:a", title: "A", href: "#/lecon/a" })).toBe(true);
+    expect((await s.getFavorites()).map((f) => f.key)).toEqual(["lecon:a"]);
+    expect(await s.toggleFavorite({ key: "lecon:a", title: "A", href: "#/lecon/a" })).toBe(false);
+    expect(await s.getFavorites()).toEqual([]);
+  });
+
+  it("une note modifiée ailleurs n'est jamais écrasée sans choix explicite", async () => {
+    const s = await open();
+    const a = await s.saveNote("l1", "onglet A", 0);
+    expect(a.ok).toBe(true);
+    const b = await s.saveNote("l1", "onglet B", 1);
+    expect(b.ok).toBe(true);
+    const stale = await s.saveNote("l1", "onglet A modifié", 1);
+    expect(stale.ok).toBe(false);
+    expect((await s.getNote("l1"))?.text).toBe("onglet B");
+    expect((await s.saveNote("l1", "onglet A modifié", 1, true)).ok).toBe(true);
+    expect((await s.listNotes()).map((n) => n.text)).toEqual(["onglet A modifié"]);
+  });
+
+  it("les notes et favoris sont inclus dans l'export", async () => {
+    const s = await open();
+    await s.saveNote("l2", "x", 0);
+    await s.toggleFavorite({ key: "fiche:l2", title: "F", href: "#/carnet/fiches/l2" });
+    const e = await s.exportAll();
+    expect(Object.keys(e.kv)).toEqual(expect.arrayContaining(["note:l2", "favoris"]));
+  });
+});

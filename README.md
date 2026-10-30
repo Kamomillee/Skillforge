@@ -2,7 +2,7 @@
 
 Plateforme de formation interactive en français : Python pour les données, SQL, applications LLM (RAG, outils, évaluation), BI / Power BI et machine learning appliqué. Public : étudiant·e de bachelor en systèmes d'information et business analytics qui veut comprendre, modifier et expliquer le code qu'il ou elle produit.
 
-> **État : étape 4 sur 7.** Nouveau : trois laboratoires et leurs projets. **ML** : évaluer un classifieur (matrice de confusion, précision/rappel, seuil choisi par le coût métier) avec scikit-learn exécuté dans le navigateur, projet « Prédiction du départ de clients ». **LLM** : RAG avec citations et abstention sur 8 documents synthétiques, modèle simulé annoncé comme tel, projet « Assistant documentaire » avec tableau d'évaluation. **BI** : mesures et contexte de filtre, matrice calculée par PostgreSQL avec le DAX équivalent affiché, projet « Rapport ventes, marges et retours » et parcours Power BI Desktop en auto-évaluation. Étape 3 : Nouveau : carte des compétences (zoom, filtres, vue locale) et activités réutilisables (classement, association, lecture de graphique, code à compléter). Jouables de bout en bout : une leçon Python (boucles) et trois leçons SQL (SELECT/WHERE/NULL, agrégations, jointures) sur un vrai PostgreSQL exécuté dans le navigateur, plus le projet SQL « Base de données d'une PME » (5 questions métier vérifiées, journal de décisions, export Markdown). Le reste du programme est listé dans la [matrice de couverture](docs/COUVERTURE.md) avec son statut réel.
+> **État : étape 5 sur 7.** Nouveau : un **tuteur** dans chaque atelier (7 modes : expliquer, exemple, indice, déboguer, question, pratiquer, entretien), qui s'appuie sur tes résultats testés sans jamais donner la solution d'office ; il fonctionne sans IA, et Claude peut s'y ajouter via le serveur SkillForge (clé côté serveur uniquement). Un **carnet** regroupe les erreurs réellement détectées (avec exercices proposés et la raison), les favoris, les notes et une fiche par notion avec mini-test de rappel. La révision espacée propose des **variantes paramétrées** des tests de validation. Étape 4 : trois laboratoires et leurs projets. **ML** : évaluer un classifieur (matrice de confusion, précision/rappel, seuil choisi par le coût métier) avec scikit-learn exécuté dans le navigateur, projet « Prédiction du départ de clients ». **LLM** : RAG avec citations et abstention sur 8 documents synthétiques, modèle simulé annoncé comme tel, projet « Assistant documentaire » avec tableau d'évaluation. **BI** : mesures et contexte de filtre, matrice calculée par PostgreSQL avec le DAX équivalent affiché, projet « Rapport ventes, marges et retours » et parcours Power BI Desktop en auto-évaluation. Étape 3 : Nouveau : carte des compétences (zoom, filtres, vue locale) et activités réutilisables (classement, association, lecture de graphique, code à compléter). Jouables de bout en bout : une leçon Python (boucles) et trois leçons SQL (SELECT/WHERE/NULL, agrégations, jointures) sur un vrai PostgreSQL exécuté dans le navigateur, plus le projet SQL « Base de données d'une PME » (5 questions métier vérifiées, journal de décisions, export Markdown). Le reste du programme est listé dans la [matrice de couverture](docs/COUVERTURE.md) avec son statut réel.
 
 ## Démarrage
 
@@ -20,7 +20,17 @@ Production locale :
 pnpm build && pnpm preview   # http://localhost:4173
 ```
 
-Aucune variable d'environnement, aucun compte et aucune clé API ne sont nécessaires à cette étape (voir `.env.example`).
+Aucune variable d'environnement, aucun compte et aucune clé API ne sont nécessaires (voir `.env.example`) : le tuteur local fonctionne sans IA.
+
+Serveur SkillForge (optionnel, Node ≥ 22.6) : sert `dist/` avec les en-têtes d'isolation et ajoute le tuteur IA.
+
+```bash
+pnpm build
+ANTHROPIC_API_KEY=… pnpm serve          # http://localhost:8787, tuteur IA Claude (fallbacks côté serveur activés)
+SKILLFORGE_TUTEUR=simule pnpm serve     # démo sans clé : réponses simulées
+```
+
+La clé reste dans l'environnement du serveur : elle n'est ni dans le bundle, ni dans les journaux. `pnpm dev` et `pnpm preview` relaient `/api` vers ce serveur s'il tourne.
 
 ### Hébergement
 
@@ -37,8 +47,8 @@ Cross-Origin-Embedder-Policy: require-corp
 
 ```bash
 pnpm typecheck        # TypeScript strict
-pnpm test             # 259 tests : contenus Python (Pyodide) et SQL (PGlite) exécutés réellement, logique, stockage, couverture
-pnpm build && pnpm test:e2e   # 25 tests Playwright dans Chromium (desktop + mobile)
+pnpm test             # 295 tests : contenus Python (Pyodide) et SQL (PGlite) exécutés réellement, logique, stockage, couverture
+pnpm build && pnpm test:e2e   # 29 tests Playwright dans Chromium (desktop + mobile)
 pnpm docs:couverture  # régénère docs/COUVERTURE.md depuis src/content/curriculum.ts
 ```
 

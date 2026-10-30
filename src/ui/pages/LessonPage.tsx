@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { FavButton, NoteBox } from "../components/Personal";
 import { exerciseById, lessonById, stageLabel } from "../../content";
 import { estimateMastery, masteryLabel } from "../../domain/mastery";
 import { lessons, exercises } from "../../content";
@@ -145,7 +146,13 @@ export function LessonPage({ route }: { route: Route }) {
         <div className="eyebrow">
           {domainById[lesson.domain].short} · Module {moduleById(lesson.moduleId)?.letter ?? ""}
         </div>
-        <div style={{ fontWeight: 650, marginBottom: 12, lineHeight: 1.35 }}>{lesson.title}</div>
+        <div style={{ fontWeight: 650, marginBottom: 4, lineHeight: 1.35 }}>{lesson.title}</div>
+        <div className="row" style={{ marginBottom: 8, gap: 4 }}>
+          <FavButton favKey={`lecon:${lesson.id}`} title={lesson.title} href={`#/lecon/${lesson.id}`} />
+          <a className="btn sm ghost" href={`#/carnet/fiches/${lesson.id}`}>
+            Fiche
+          </a>
+        </div>
         <ol>
           {lesson.sections.map((s, k) => (
             <li key={s.id}>
@@ -175,6 +182,10 @@ export function LessonPage({ route }: { route: Route }) {
             </button>
           </div>
         )}
+        <details style={{ marginTop: 12 }}>
+          <summary className="small">Mes notes</summary>
+          <NoteBox lessonId={lesson.id} compact />
+        </details>
         {lesson.validationExerciseId && (
           <div style={{ marginTop: 12 }}>
             <a className="btn sm" href={lessonHref(lesson.id, section.id, lesson.validationExerciseId)}>

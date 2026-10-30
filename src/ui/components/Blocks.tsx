@@ -108,7 +108,7 @@ export function ExplainBlock({ block, lesson }: { block: ExplainBlockT; lesson: 
         Enregistrer mon explication
       </button>
       <p className="small muted" style={{ marginTop: 8 }}>
-        C'est une auto-évaluation : elle apparaît dans tes preuves comme « non vérifiée ». Le tuteur IA pourra la commenter dans une prochaine étape.
+        C'est une auto-évaluation : elle apparaît dans tes preuves comme « non vérifiée ». Le tuteur peut te poser des questions d'entretien sur cette notion depuis l'atelier.
       </p>
     </div>
   );

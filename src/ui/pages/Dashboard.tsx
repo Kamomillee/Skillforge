@@ -193,6 +193,11 @@ export function Dashboard() {
 
           <section aria-labelledby="err-title">
             <h2 id="err-title">Erreurs fréquentes</h2>
+            {errors.length > 0 && (
+              <p className="small" style={{ marginTop: 0 }}>
+                <a href="#/carnet/erreurs">Ouvrir le carnet d'erreurs</a> : explications et exercices proposés pour chacune.
+              </p>
+            )}
             {errors.length ? (
               <ul className="list-plain">
                 {errors.map((e) => (

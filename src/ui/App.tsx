@@ -11,6 +11,7 @@ import { ReviewPage } from "./pages/ReviewPage";
 import { LessonsPage } from "./pages/LessonsPage";
 import { ProjectPage } from "./pages/ProjectPage";
 import { SkillMap } from "./pages/SkillMap";
+import { Notebook } from "./pages/Notebook";
 
 /** Mesure du temps actif : page visible ET interaction dans la dernière minute. */
 function useActivityTracker() {
@@ -39,6 +40,7 @@ export function App() {
     { href: "#/tableau", label: "Tableau de bord", name: "tableau" },
     { href: "#/lecons", label: "Leçons", name: "lecons" },
     { href: "#/carte", label: "Carte", name: "carte" },
+    { href: "#/carnet", label: "Carnet", name: "carnet" },
     { href: "#/programme", label: "Programme", name: "programme" },
     { href: "#/parametres", label: "Paramètres", name: "parametres" },
   ];
@@ -66,6 +68,9 @@ export function App() {
     case "carte":
       page = <SkillMap route={route} />;
       break;
+    case "carnet":
+      page = <Notebook route={route} />;
+      break;
     case "programme":
       page = <Curriculum />;
       break;
@@ -85,7 +90,7 @@ export function App() {
   }
 
   useEffect(() => {
-    const titles: Record<string, string> = { tableau: "Tableau de bord", lecon: "Leçon", programme: "Programme", parametres: "Paramètres", onboarding: "Mon parcours", revision: "Révision", lecons: "Leçons", projet: "Projet", carte: "Carte des compétences" };
+    const titles: Record<string, string> = { tableau: "Tableau de bord", lecon: "Leçon", programme: "Programme", parametres: "Paramètres", onboarding: "Mon parcours", revision: "Révision", lecons: "Leçons", projet: "Projet", carte: "Carte des compétences", carnet: "Carnet" };
     document.title = titles[route.name] ? `${titles[route.name]} · SkillForge AI` : "SkillForge AI";
   }, [route.name]);
 

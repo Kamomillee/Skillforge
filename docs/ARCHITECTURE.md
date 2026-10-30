@@ -85,6 +85,15 @@ content/ : données versionnées, importées par l'UI et par les tests
 
 Les **visualisations SQL** n'inventent pas de lignes : `viz/SqlSteps.tsx` exécute chaque étape (FROM, WHERE, GROUP BY…) dans PostgreSQL ; `viz/JoinViz.tsx` déroule une boucle imbriquée (`viz/joinSteps.ts`, pur) dont le résultat final est comparé à PostgreSQL dans les tests.
 
+## Tuteur, carnet, variantes (étape 5)
+
+- `domain/tutor.ts` : contexte du tuteur (`TutorContext`), résumé affiché (« Ce que le tuteur sait »), tuteur local `localTutor(mode, ctx)` et contexte compact envoyé au serveur (`tutorPayload`, sans valeurs cachées, solution seulement au niveau 4).
+- `content/guides.ts` : fiches par leçon et guides par étiquette d'erreur (textes relus ; tests de couverture).
+- `domain/notebook.ts` : carnet d'erreurs calculé depuis les tentatives ; `practiceFor` propose des exercices avec la raison observée.
+- `content/variants.ts` : modèles de variantes et générateur déterministe ; `ReviewPage` choisit la variante selon le nombre de révisions faites.
+- `ui/components/TutorPanel.tsx`, `ui/components/Personal.tsx` (favori, notes, fiche), `ui/pages/Notebook.tsx` (`#/carnet/erreurs|favoris|notes|fiches`).
+- `server/` : `tuteur.ts` (validation, prompts, limites, fournisseur simulé — sans réseau), `claude.ts` (SDK officiel), `main.ts` (HTTP, fichiers statiques). Le navigateur détecte le serveur via `/api/sante`.
+
 ## Modèle de données (IndexedDB `skillforge`, version 1)
 
 | Magasin | Clé | Contenu |

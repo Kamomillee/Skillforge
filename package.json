@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "tsc -p . && vite build",
     "preview": "vite preview",
+    "serve": "node --experimental-strip-types --no-warnings=ExperimentalWarning server/main.ts",
     "typecheck": "tsc -p .",
     "test": "vitest run",
     "test:content": "vitest run tests/content",
@@ -15,6 +16,7 @@
     "docs:couverture": "UPDATE_DOCS=1 vitest run tests/unit/couverture.test.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
     "@codemirror/commands": "^6.11.1",
     "@codemirror/lang-python": "^6.2.1",
     "@codemirror/lang-sql": "^6.10.0",

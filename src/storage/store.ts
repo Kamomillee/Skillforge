@@ -50,6 +50,8 @@ export interface Attempt {
   hintLevel: number;
   solutionViewed: boolean;
   durationMs: number;
+  /** Variante paramétrée (révision) ; absente ou 0 pour l'exercice d'origine. */
+  variantSeed?: number;
 }
 
 export type EventType =
@@ -63,7 +65,9 @@ export type EventType =
   | "report"
   | "review-done"
   | "project-export"
-  | "activity";
+  | "activity"
+  | "tutor"
+  | "recall";
 
 export interface LearningEvent {
   id?: number;
@@ -89,6 +93,23 @@ export interface ResumePoint {
   exerciseId?: string;
   at: string;
 }
+
+export interface Favorite {
+  /** Identifiant stable : `lecon:<id>`, `exercice:<id>` ou `fiche:<id>`. */
+  key: string;
+  title: string;
+  href: string;
+  at: string;
+}
+
+export interface Note {
+  lessonId: string;
+  text: string;
+  revision: number;
+  updatedAt: string;
+}
+
+export type SaveNoteResult = { ok: true; note: Note } | { ok: false; conflict: Note };
 
 export type SaveDraftResult = { ok: true; draft: Draft } | { ok: false; conflict: Draft };
 
@@ -162,6 +183,42 @@ export class Store {
 
   listDrafts(): Promise<Draft[]> {
     return reqP(this.store(STORES.drafts).getAll());
+  }
+
+  // ---- favoris et notes (kv) ----
+  getFavorites = async () => (await this.get<Favorite[]>("favoris")) ?? [];
+
+  /** Ajoute ou retire un favori ; renvoie true s'il est désormais en favori. */
+  async toggleFavorite(f: Omit<Favorite, "at">): Promise<boolean> {
+    const tx = this.db.transaction(STORES.kv, "readwrite");
+    const s = tx.objectStore(STORES.kv);
+    const cur = ((await reqP(s.get("favoris"))) as Favorite[] | undefined) ?? [];
+    const has = cur.some((x) => x.key === f.key);
+    s.put(has ? cur.filter((x) => x.key !== f.key) : [{ ...f, at: new Date().toISOString() }, ...cur], "favoris");
+    await txDone(tx);
+    return !has;
+  }
+
+  getNote = (lessonId: string) => this.get<Note>(`note:${lessonId}`);
+
+  async listNotes(): Promise<Note[]> {
+    const notes = (await reqP(this.store(STORES.kv).getAll(IDBKeyRange.bound("note:", "note:\uffff")))) as Note[];
+    return notes.filter((n) => n.text.trim()).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+
+  /** Même règle que les brouillons : on n'écrase jamais une note modifiée ailleurs entre-temps. */
+  async saveNote(lessonId: string, text: string, baseRevision: number, force = false): Promise<SaveNoteResult> {
+    const tx = this.db.transaction(STORES.kv, "readwrite");
+    const s = tx.objectStore(STORES.kv);
+    const current = (await reqP(s.get(`note:${lessonId}`))) as Note | undefined;
+    if (!force && current && current.revision !== baseRevision && current.text !== text) {
+      await txDone(tx);
+      return { ok: false, conflict: current };
+    }
+    const note: Note = { lessonId, text: text.slice(0, 20_000), revision: (current?.revision ?? 0) + 1, updatedAt: new Date().toISOString() };
+    s.put(note, `note:${lessonId}`);
+    await txDone(tx);
+    return { ok: true, note };
   }
 
   // ---- tentatives ----

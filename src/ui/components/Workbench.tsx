@@ -10,6 +10,9 @@ import { ConfirmDialog, Dialog } from "./Dialog";
 import { Md } from "../Md";
 import type { QueryOutcome } from "../../runtime/sql/engine";
 import { ResultTable, SchemaPanel, SqlErrorCard } from "./SqlParts";
+import { TutorPanel } from "./TutorPanel";
+import { exerciseHref, type RunError } from "../../domain/tutor";
+import { FavButton } from "./Personal";
 
 const kindLabel: Record<Exercise["kind"], string> = {
   guided: "Exercice guidé",
@@ -34,7 +37,9 @@ export function Workbench({
   onFullscreen,
   fullscreen,
   onPassed,
+  variantSeed = 0,
 }: {
+  variantSeed?: number;
   exercise: Exercise;
   lesson?: Lesson;
   mode?: "lesson" | "review";
@@ -46,7 +51,9 @@ export function Workbench({
   const isSql = ex.language === "sql";
   const engineState = isSql ? sqlState : runnerState;
   const engine = isSql ? sqlRunner : runner;
-  const draftKey = mode === "review" ? `${ex.id}#revision` : ex.id;
+  // Tentatives de révision : `<id>#revision`. Brouillon et aides sont propres à chaque variante.
+  const attemptKey = mode === "review" ? `${ex.id}#revision` : ex.id;
+  const draftKey = variantSeed ? `${attemptKey}~${variantSeed}` : attemptKey;
   const draft = useDraft(store, ex, draftKey);
   const [out, setOut] = useState<Output>({ kind: "none" });
   const [tab, setTab] = useState<"console" | "tests">("console");
@@ -68,8 +75,8 @@ export function Workbench({
   useEffect(() => void engine.init().catch(() => {}), [engine]);
 
   const attempts = useMemo(
-    () => data.attempts.filter((a) => a.exerciseId === draftKey).sort((a, b) => b.at.localeCompare(a.at)),
-    [data.attempts, draftKey],
+    () => data.attempts.filter((a) => a.exerciseId === attemptKey).sort((a, b) => b.at.localeCompare(a.at)),
+    [data.attempts, attemptKey],
   );
   const solved = attempts.some((a) => a.status === "passed");
 
@@ -81,7 +88,7 @@ export function Workbench({
       const r = await sqlRunner.query(draft.code, ex.timeLimitMs);
       const status = r.status === "ok" && r.outcome && !r.outcome.ok ? "error" : r.status;
       setOut({ kind: "sql", status, outcome: r.outcome, message: r.message });
-      void store.addEvent({ type: "run", exerciseId: draftKey, lessonId: lesson?.id, data: { status, errorType: r.outcome && !r.outcome.ok ? r.outcome.error.code : undefined } });
+      void store.addEvent({ type: "run", exerciseId: attemptKey, lessonId: lesson?.id, data: { status, errorType: r.outcome && !r.outcome.ok ? r.outcome.error.code : undefined } });
       return;
     }
     setOut({ kind: "run", text: "", status: "running", error: null });
@@ -91,7 +98,7 @@ export function Workbench({
       onStdout: (t) => setOut((o) => (o.kind === "run" ? { ...o, text: o.text + t + "\n" } : o)),
     });
     setOut((o) => ({ kind: "run", text: o.kind === "run" ? o.text : res.output, status: res.status, error: res.error, ms: res.durationMs }));
-    void store.addEvent({ type: "run", exerciseId: draftKey, lessonId: lesson?.id, data: { status: res.status, errorType: res.error?.type } });
+    void store.addEvent({ type: "run", exerciseId: attemptKey, lessonId: lesson?.id, data: { status: res.status, errorType: res.error?.type } });
   }
 
   async function submit() {
@@ -103,8 +110,9 @@ export function Workbench({
     setOut({ kind: "grade", report, code });
     const solutionViewed = hintLevel >= 4;
     await store.addAttempt({
-      exerciseId: draftKey,
+      exerciseId: attemptKey,
       exerciseVersion: ex.version,
+      ...(variantSeed ? { variantSeed } : {}),
       at: new Date().toISOString(),
       code: draft.code,
       status: report.status,
@@ -137,7 +145,7 @@ export function Workbench({
     if (next === 4) return setConfirm("solution");
     setHintLevel(next);
     await store.set(hintsKey, next);
-    await store.addEvent({ type: "hint", exerciseId: draftKey, lessonId: lesson?.id, data: { level: next } });
+    await store.addEvent({ type: "hint", exerciseId: attemptKey, lessonId: lesson?.id, data: { level: next } });
   }
 
   async function confirmAction() {
@@ -150,12 +158,22 @@ export function Workbench({
     } else if (c === "solution") {
       setHintLevel(4);
       await store.set(hintsKey, 4);
-      await store.addEvent({ type: "hint", exerciseId: draftKey, lessonId: lesson?.id, data: { level: 4 } });
+      await store.addEvent({ type: "hint", exerciseId: attemptKey, lessonId: lesson?.id, data: { level: 4 } });
     } else if (c && typeof c === "object") {
       await draft.replace(c.restore);
       setHistoryOpen(false);
       toast("Code de la tentative restauré.");
     }
+  }
+
+  const lastReport = out.kind === "grade" ? out.report : undefined;
+  const runError: RunError | undefined =
+    out.kind === "run" && out.error ? { kind: "python", error: out.error } : out.kind === "sql" && out.outcome && !out.outcome.ok ? { kind: "sql", message: out.outcome.error.message, code: out.outcome.error.code } : undefined;
+
+  function showEvidence() {
+    if (lastReport) setTab("tests");
+    else if (attempts.length) setHistoryOpen(true);
+    else toast("Aucune exécution vérifiée pour l'instant : lance « ✓ Vérifier ».");
   }
 
   async function sendReport() {
@@ -175,6 +193,7 @@ export function Workbench({
             <span className="small muted">v{ex.version}</span>
           </div>
           <div className="row">
+            {mode === "lesson" && exerciseHref(ex.id) && <FavButton favKey={`exercice:${ex.id}`} title={ex.title} href={exerciseHref(ex.id)!} />}
             {onFullscreen && (
               <button className="btn sm ghost" onClick={() => onFullscreen(!fullscreen)} aria-pressed={!!fullscreen}>
                 {fullscreen ? "⤡ Quitter le plein écran" : "⤢ Plein écran"}
@@ -274,6 +293,22 @@ export function Workbench({
 
           <HelpPanel ex={ex} level={hintLevel} onMore={revealHint} attempts={attempts.length} />
 
+          <TutorPanel
+            exercise={ex}
+            lesson={lesson}
+            code={draft.code ?? ""}
+            report={lastReport}
+            runError={runError}
+            attempts={attempts}
+            hintLevel={hintLevel}
+            onHint={revealHint}
+            onReport={(t) => {
+              setReportText(t);
+              setReportOpen(true);
+            }}
+            onEvidence={showEvidence}
+          />
+
           {out.kind === "grade" && out.report.status === "passed" && (
             <div className="callout success" style={{ marginTop: 16 }}>
               <div className="callout-title">Correction expliquée</div>
@@ -287,8 +322,7 @@ export function Workbench({
           )}
 
           <p className="small muted" style={{ marginTop: 16 }}>
-            Les résultats ci-dessus sont <strong>testés</strong> ({isSql ? "ta requête et la requête de référence exécutées sur les mêmes données, dans ton navigateur" : "tests déterministes exécutés dans ton navigateur"}). Le tuteur IA, qui donnera un avis qualitatif séparé, arrive dans une
-            prochaine étape.{" "}
+            Les résultats de l'onglet « Tests » sont <strong>testés</strong> ({isSql ? "ta requête et la requête de référence exécutées sur les mêmes données, dans ton navigateur" : "tests déterministes exécutés dans ton navigateur"}). Le tuteur donne un <strong>avis</strong>, séparé et non testé : en cas de désaccord, les tests font foi.{" "}
             <button className="btn sm ghost" onClick={() => setReportOpen(true)}>
               Signaler un problème dans cet exercice
             </button>

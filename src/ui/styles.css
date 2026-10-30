@@ -1858,3 +1858,110 @@ kbd,
 table.result {
   font-variant-ligatures: none;
 }
+
+/* ---- Étape 5 : carnet, fiches, tuteur ---- */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+  margin: 16px 0 20px;
+}
+.tabs a {
+  padding: 8px 14px;
+  text-decoration: none;
+  color: var(--ink-3);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  font-weight: 600;
+}
+.tabs a[aria-current="page"] {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+.carnet-list > li {
+  margin-bottom: 12px;
+  padding: 14px 16px;
+}
+.carnet-entry.resolved {
+  border-style: dashed;
+}
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 12px;
+}
+.note-box textarea {
+  width: 100%;
+  font: inherit;
+}
+.fiches-layout {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+  gap: 24px;
+}
+.fiches-layout nav a[aria-current="page"] {
+  font-weight: 700;
+}
+.fiche h3 {
+  margin-top: 20px;
+}
+.recall {
+  padding: 14px 16px;
+}
+@media (max-width: 760px) {
+  .fiches-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.tutor {
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.tutor-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+.tutor-modes .btn[aria-pressed="true"] {
+  outline: 2px solid var(--accent);
+}
+.tutor-reply {
+  border-left: 4px solid var(--accent);
+  padding: 8px 12px;
+  margin-top: 10px;
+  background: var(--surface-2);
+  border-radius: 0 6px 6px 0;
+}
+.tutor-reply.ai {
+  border-left-style: dashed;
+}
+.tutor-source {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+}
+.tutor-basis {
+  font-size: 0.85rem;
+}
+.tested-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--success);
+}
+.tutor-ai-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.tutor-ai-toggle input {
+  margin-top: 3px;
+  flex: none;
+}

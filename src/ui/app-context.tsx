@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { Attempt, Draft, LearningEvent, LearningPath, Profile, ResumePoint, Review } from "../storage/store";
+import type { Attempt, Draft, Favorite, LearningEvent, LearningPath, Profile, ResumePoint, Review } from "../storage/store";
 import { Store } from "../storage/store";
 import { getRunner, type PythonRunner, type RunnerState } from "../runtime/python/client";
 import { getSqlRunner, type SqlRunner } from "../runtime/sql/client";
@@ -13,6 +13,7 @@ export interface Snapshot {
   reviews: Review[];
   drafts: Draft[];
   activity: Record<string, number>;
+  favorites: Favorite[];
 }
 
 interface Ctx {
@@ -35,7 +36,7 @@ export function useApp() {
 }
 
 async function load(store: Store): Promise<Snapshot> {
-  const [profile, path, resume, attempts, events, reviews, drafts, activity] = await Promise.all([
+  const [profile, path, resume, attempts, events, reviews, drafts, activity, favorites] = await Promise.all([
     store.getProfile(),
     store.getPath(),
     store.getResume(),
@@ -44,8 +45,9 @@ async function load(store: Store): Promise<Snapshot> {
     store.listReviews(),
     store.listDrafts(),
     store.getActivity(),
+    store.getFavorites(),
   ]);
-  return { profile, path, resume, attempts, events, reviews, drafts, activity };
+  return { profile, path, resume, attempts, events, reviews, drafts, activity, favorites };
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
