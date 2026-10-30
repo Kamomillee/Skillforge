@@ -1666,3 +1666,103 @@ a.card-link:hover {
   margin: 0;
   font-variant-numeric: tabular-nums;
 }
+
+/* ---------- Pipeline RAG ---------- */
+.rag-settings {
+  gap: var(--space-3);
+  align-items: end;
+}
+.rag-steps {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.rag-steps li {
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.85rem;
+  color: var(--ink-3);
+}
+.rag-steps li.done {
+  color: var(--ink-2);
+}
+.rag-steps li.done::after {
+  content: " ✓";
+}
+.rag-steps li.current {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-weight: 650;
+}
+.rag-stage {
+  min-height: 180px;
+}
+.rag-docs {
+  columns: 2 220px;
+  padding-left: 18px;
+  margin: 0;
+  font-size: 0.9rem;
+}
+.rag-cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.rag-cards li {
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  background: var(--surface);
+}
+.rag-cards li.fort {
+  border: 1px solid var(--accent);
+}
+.rag-cards mark,
+.rag-answer mark {
+  background: var(--warning-soft);
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.budget-bar {
+  height: 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  overflow: hidden;
+  max-width: 420px;
+}
+.budget-bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.rag-answer {
+  border-left: 3px solid var(--accent);
+  padding: 4px 12px;
+  background: var(--surface-2);
+}
+.rag-eval summary {
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.rag-eval table td {
+  vertical-align: top;
+}
+table.result.eval-table {
+  font-family: var(--font-sans);
+  width: 100%;
+}
+table.result.eval-table td {
+  white-space: normal;
+}
+.rag-settings label.field {
+  align-self: stretch;
+  grid-template-rows: 1fr auto;
+}

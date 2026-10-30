@@ -5,14 +5,15 @@ import { exercisesAgregations, lessonAgregations } from "./sql/agregations";
 import { exercisesJointures, lessonJointures } from "./sql/jointures";
 import { exercisesProjetPme, projetPme } from "./sql/projet-pme";
 import { exercisesMlEvaluation, exercisesProjetChurn, lessonMlEvaluation, projetChurn } from "./ml/evaluation";
+import { exercisesProjetRag, exercisesRag, lessonRag, projetAssistant } from "./llm/rag";
 
 export * from "./types";
 export { curriculum, domainById, allNotions, moduleById, coverageStats, moduleDependencies } from "./curriculum";
 
-export const lessons: Lesson[] = [lessonBoucles, lessonSelect, lessonAgregations, lessonJointures, lessonMlEvaluation];
-export const projects: Project[] = [projetPme, projetChurn];
+export const lessons: Lesson[] = [lessonBoucles, lessonSelect, lessonAgregations, lessonJointures, lessonMlEvaluation, lessonRag];
+export const projects: Project[] = [projetPme, projetChurn, projetAssistant];
 export const exercises: Exercise[] = [
-  ...[...exercisesBoucles, ...exercisesMlEvaluation, ...exercisesProjetChurn].map((e) => pythonExerciseSchema.parse(e)),
+  ...[...exercisesBoucles, ...exercisesMlEvaluation, ...exercisesProjetChurn, ...exercisesRag, ...exercisesProjetRag].map((e) => pythonExerciseSchema.parse(e)),
   ...[...exercisesSelect, ...exercisesAgregations, ...exercisesJointures, ...exercisesProjetPme].map((e) => sqlExerciseSchema.parse(e)),
 ];
 

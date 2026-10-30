@@ -9,6 +9,7 @@ import { ResultTable, SqlErrorCard } from "./SqlParts";
 import { SqlSteps } from "../viz/SqlSteps";
 import { JoinViz } from "../viz/JoinViz";
 import { ThresholdViz } from "../viz/ThresholdViz";
+import { RagViz } from "../viz/RagViz";
 import { projectById } from "../../content";
 import { ChartQuestion, FillCode, Matching, Ordering } from "./Activities";
 
@@ -216,6 +217,8 @@ export function LessonBlockView({ block, lesson, onOpenExercise }: { block: Less
       return <JoinViz title={block.title} />;
     case "threshold-viz":
       return <ThresholdViz title={block.title} />;
+    case "rag-viz":
+      return <RagViz title={block.title} />;
     case "ordering":
       return <Ordering block={block} lesson={lesson} />;
     case "matching":

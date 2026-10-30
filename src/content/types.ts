@@ -192,6 +192,7 @@ export type LessonBlock =
       prelude?: string;
     }
   | { type: "threshold-viz"; title: string }
+  | { type: "rag-viz"; title: string }
   | { type: "trace"; title: string; code: string; steps: TraceStep[] }
   | {
       type: "prediction";

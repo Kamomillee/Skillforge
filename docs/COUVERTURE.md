@@ -9,10 +9,10 @@
 |---|---|---|---|---|---|---|---|
 | Python | 58 | 57 | 0 | 0 | 0 | 1 | Pipeline d'import, nettoyage et contrôle qualité (Prévu) |
 | SQL | 50 | 39 | 0 | 0 | 4 | 7 | Base de données d'une PME (Disponible) |
-| LLM | 69 | 69 | 0 | 0 | 0 | 0 | Assistant documentaire avec citations (Prévu) |
+| LLM | 69 | 64 | 0 | 0 | 0 | 5 | Assistant documentaire avec citations (Disponible) |
 | BI | 48 | 48 | 0 | 0 | 0 | 0 | Rapport ventes, marges et retours (Prévu) |
 | ML | 55 | 51 | 0 | 0 | 0 | 4 | Prédiction du départ de clients (Disponible) |
-| **Total** | **280** | 264 | 0 | 0 | 4 | 12 | Projet transversal : copilote data PME (Prévu) |
+| **Total** | **280** | 259 | 0 | 0 | 4 | 17 | Projet transversal : copilote data PME (Prévu) |
 
 ## Python pour les données et l'automatisation
 
@@ -168,16 +168,16 @@ Visualisations prévues : Tokenisation illustrative (distincte d'un tokenizer r�
 | B. Conception d'applications | Simulation et appel réel | Prévu | — | — | — | Assistant documentaire avec citations |
 | C. RAG | Chargement des documents | Prévu | — | — | — | Assistant documentaire avec citations |
 | C. RAG | Extraction de texte | Prévu | — | — | — | Assistant documentaire avec citations |
-| C. RAG | Découpage | Prévu | — | — | — | Assistant documentaire avec citations |
+| C. RAG | Découpage | Disponible | Découper un document en morceaux avec chevauchement et expliquer l'effet de la taille des morceaux. | Visualisation du pipeline (taille modifiable), Exercice guidé, Index du projet | Fonctions Python vérifiées par tests visibles et cachés (Pyodide), comparées au pipeline de la visualisation ; aucun modèle de langage appelé (modèle simulé annoncé). | Assistant documentaire avec citations (projet LLM) : index, recherche, tableau d'évaluation sur 13 questions de référence. |
 | C. RAG | Embeddings | Prévu | — | — | — | Assistant documentaire avec citations |
 | C. RAG | Similarité | Prévu | — | — | — | Assistant documentaire avec citations |
 | C. RAG | Recherche vectorielle | Prévu | — | — | — | Assistant documentaire avec citations |
-| C. RAG | Recherche lexicale et hybride | Prévu | — | — | — | Assistant documentaire avec citations |
+| C. RAG | Recherche lexicale et hybride | Disponible | Calculer un score lexical normalisé et reconnaître ce qu'il rate (synonymes, conjugaison), ce que la recherche hybride vise à corriger. | Démonstration exécutable, Cartes de résultats avec termes surlignés, Exercice autonome, Recherche du projet | Fonctions Python vérifiées par tests visibles et cachés (Pyodide), comparées au pipeline de la visualisation ; aucun modèle de langage appelé (modèle simulé annoncé). | Assistant documentaire avec citations (projet LLM) : index, recherche, tableau d'évaluation sur 13 questions de référence. |
 | C. RAG | Métadonnées et filtres | Prévu | — | — | — | Assistant documentaire avec citations |
 | C. RAG | Reranking | Prévu | — | — | — | Assistant documentaire avec citations |
-| C. RAG | Construction du contexte | Prévu | — | — | — | Assistant documentaire avec citations |
-| C. RAG | Citations | Prévu | — | — | — | Assistant documentaire avec citations |
-| C. RAG | Abstention | Prévu | — | — | — | Assistant documentaire avec citations |
+| C. RAG | Construction du contexte | Disponible | Assembler un contexte par ordre de pertinence sans dépasser un budget de mots. | Visualisation du budget de contexte, Débogage | Fonctions Python vérifiées par tests visibles et cachés (Pyodide), comparées au pipeline de la visualisation ; aucun modèle de langage appelé (modèle simulé annoncé). | Assistant documentaire avec citations (projet LLM) : index, recherche, tableau d'évaluation sur 13 questions de référence. |
+| C. RAG | Citations | Disponible | Citer les passages qui fondent une réponse et vérifier qu'ils contiennent bien la réponse. | Ordonner les étapes du pipeline, Prédiction (question piège), Test de validation, Tableau d'évaluation (projet) | Fonctions Python vérifiées par tests visibles et cachés (Pyodide), comparées au pipeline de la visualisation ; aucun modèle de langage appelé (modèle simulé annoncé). | Assistant documentaire avec citations (projet LLM) : index, recherche, tableau d'évaluation sur 13 questions de référence. |
+| C. RAG | Abstention | Disponible | Décider de s'abstenir quand les sources sont insuffisantes et mesurer silences à tort et réponses sans appui. | Seuil de citation modifiable, Explication avec ses propres mots, Test de validation, Tableau d'évaluation (projet) | Fonctions Python vérifiées par tests visibles et cachés (Pyodide), comparées au pipeline de la visualisation ; aucun modèle de langage appelé (modèle simulé annoncé). | Assistant documentaire avec citations (projet LLM) : index, recherche, tableau d'évaluation sur 13 questions de référence. |
 | C. RAG | Mise à jour d'un index | Prévu | — | — | — | Assistant documentaire avec citations |
 | C. RAG | Provenance | Prévu | — | — | — | Assistant documentaire avec citations |
 | C. RAG | Permissions d'accès | Prévu | — | — | — | Assistant documentaire avec citations |

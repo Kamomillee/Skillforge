@@ -290,6 +290,91 @@ const implemented: Record<string, Partial<Notion>> = {
     ],
     "project": "Prédiction du départ de clients (projet ML) : base de comparaison, régression logistique, seuil chiffré par le coût."
 },
+  "llm.c.decoupage": {
+    "status": "disponible",
+    "objective": "Découper un document en morceaux avec chevauchement et expliquer l'effet de la taille des morceaux.",
+    "activities": [
+        "Visualisation du pipeline (taille modifiable)",
+        "Exercice guidé",
+        "Index du projet"
+    ],
+    "evaluation": "Fonctions Python vérifiées par tests visibles et cachés (Pyodide), comparées au pipeline de la visualisation ; aucun modèle de langage appelé (modèle simulé annoncé).",
+    "prerequisites": [],
+    "lessonIds": [
+        "llm-rag-citations"
+    ],
+    "project": "Assistant documentaire avec citations (projet LLM) : index, recherche, tableau d'évaluation sur 13 questions de référence."
+},
+  "llm.c.recherche-lexicale-et-hybride": {
+    "status": "disponible",
+    "objective": "Calculer un score lexical normalisé et reconnaître ce qu'il rate (synonymes, conjugaison), ce que la recherche hybride vise à corriger.",
+    "activities": [
+        "Démonstration exécutable",
+        "Cartes de résultats avec termes surlignés",
+        "Exercice autonome",
+        "Recherche du projet"
+    ],
+    "evaluation": "Fonctions Python vérifiées par tests visibles et cachés (Pyodide), comparées au pipeline de la visualisation ; aucun modèle de langage appelé (modèle simulé annoncé).",
+    "prerequisites": [
+        "llm.c.decoupage"
+    ],
+    "lessonIds": [
+        "llm-rag-citations"
+    ],
+    "project": "Assistant documentaire avec citations (projet LLM) : index, recherche, tableau d'évaluation sur 13 questions de référence."
+},
+  "llm.c.construction-du-contexte": {
+    "status": "disponible",
+    "objective": "Assembler un contexte par ordre de pertinence sans dépasser un budget de mots.",
+    "activities": [
+        "Visualisation du budget de contexte",
+        "Débogage"
+    ],
+    "evaluation": "Fonctions Python vérifiées par tests visibles et cachés (Pyodide), comparées au pipeline de la visualisation ; aucun modèle de langage appelé (modèle simulé annoncé).",
+    "prerequisites": [
+        "llm.c.recherche-lexicale-et-hybride"
+    ],
+    "lessonIds": [
+        "llm-rag-citations"
+    ],
+    "project": "Assistant documentaire avec citations (projet LLM) : index, recherche, tableau d'évaluation sur 13 questions de référence."
+},
+  "llm.c.citations": {
+    "status": "disponible",
+    "objective": "Citer les passages qui fondent une réponse et vérifier qu'ils contiennent bien la réponse.",
+    "activities": [
+        "Ordonner les étapes du pipeline",
+        "Prédiction (question piège)",
+        "Test de validation",
+        "Tableau d'évaluation (projet)"
+    ],
+    "evaluation": "Fonctions Python vérifiées par tests visibles et cachés (Pyodide), comparées au pipeline de la visualisation ; aucun modèle de langage appelé (modèle simulé annoncé).",
+    "prerequisites": [
+        "llm.c.construction-du-contexte"
+    ],
+    "lessonIds": [
+        "llm-rag-citations"
+    ],
+    "project": "Assistant documentaire avec citations (projet LLM) : index, recherche, tableau d'évaluation sur 13 questions de référence."
+},
+  "llm.c.abstention": {
+    "status": "disponible",
+    "objective": "Décider de s'abstenir quand les sources sont insuffisantes et mesurer silences à tort et réponses sans appui.",
+    "activities": [
+        "Seuil de citation modifiable",
+        "Explication avec ses propres mots",
+        "Test de validation",
+        "Tableau d'évaluation (projet)"
+    ],
+    "evaluation": "Fonctions Python vérifiées par tests visibles et cachés (Pyodide), comparées au pipeline de la visualisation ; aucun modèle de langage appelé (modèle simulé annoncé).",
+    "prerequisites": [
+        "llm.c.citations"
+    ],
+    "lessonIds": [
+        "llm-rag-citations"
+    ],
+    "project": "Assistant documentaire avec citations (projet LLM) : index, recherche, tableau d'évaluation sur 13 questions de référence."
+},
 };
 
 const domains: Domain[] = [
@@ -468,8 +553,8 @@ const domains: Domain[] = [
     description: "Construire des applications IA fiables : appels côté serveur, RAG avec citations, outils, sécurité et évaluation.",
     project: {
       title: "Assistant documentaire avec citations",
-      summary: "Réponses citées, refus justifié quand l'information manque, tableau d'évaluation sur un jeu de questions connu.",
-      status: "prevu",
+      summary: "Index, recherche lexicale, citations, abstention et tableau d'évaluation sur un jeu de questions connu. Sans modèle de langage réel (réponse simulée) ; l'appel côté serveur à un vrai modèle est prévu.",
+      status: "disponible",
     },
     plannedVisualizations: [
       "Tokenisation illustrative (distincte d'un tokenizer réel)",
