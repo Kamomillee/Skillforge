@@ -21,6 +21,11 @@
 - Renseigner `validationExerciseId` pour permettre de passer la notion par un test.
 - Mettre à jour le statut de la notion dans `src/content/curriculum.ts` **uniquement** quand la leçon est testée, puis `pnpm docs:couverture`. `tests/unit/content.test.ts` refuse une notion « Disponible » sans leçon ni exercice.
 
+## Une activité (tous domaines)
+- Blocs `ordering`, `matching`, `chart-question`, `fill-code` (`src/content/types.ts`), avec un `id` unique dans tout le contenu.
+- `chart-question` : préférer `sql` (données calculées en direct) à `data` fixe ; si l'explication affirme un fait sur les données, l'ajouter dans « faits affirmés par les activités » de `tests/content/activities.test.ts`.
+- `fill-code` en SQL : chaque réponse acceptée est substituée et exécutée par les tests.
+
 ## Une visualisation
 - Composant React dans `src/ui/viz/`, avec : lecture/pause, pas à pas avant/arrière, réinitialisation, vitesse, **version texte équivalente**, respect de `prefers-reduced-motion`, information jamais portée par la seule couleur (icône ou libellé en plus).
 - Si la visualisation décrit une exécution, ajouter un test qui compare les étapes rédigées à une exécution réelle (voir le test de `LoopTracer` dans `tests/content/python-boucles.test.ts`).

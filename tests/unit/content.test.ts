@@ -43,3 +43,28 @@ describe("pistes SQL lues dans la requête", () => {
     expect(sqlMisconceptionHint("-- pas = NULL ici\nSELECT * FROM clients WHERE ville IS NULL", "ordre-tri")).toBe("ordre-tri");
   });
 });
+
+import { curriculum, moduleById, moduleDependencies } from "../../src/content";
+
+describe("dépendances entre modules", () => {
+  it("référencent des modules existants et ne forment pas de cycle", () => {
+    for (const d of moduleDependencies) {
+      expect(moduleById(d.from), d.from).toBeTruthy();
+      expect(moduleById(d.to), d.to).toBeTruthy();
+    }
+    const ids = curriculum.flatMap((d) => d.modules.map((m) => m.id));
+    const state = new Map<string, number>();
+    const visit = (id: string): void => {
+      expect(state.get(id), `cycle via ${id}`).not.toBe(1);
+      if (state.get(id) === 2) return;
+      state.set(id, 1);
+      for (const e of moduleDependencies.filter((x) => x.from === id)) visit(e.to);
+      state.set(id, 2);
+    };
+    ids.forEach(visit);
+  });
+  it("les prérequis des notions existent", () => {
+    const notionIds = new Set(allNotions().map((r) => r.notion.id));
+    for (const r of allNotions()) for (const p of r.notion.prerequisites ?? []) expect(notionIds.has(p), `${r.notion.id} → ${p}`).toBe(true);
+  });
+});

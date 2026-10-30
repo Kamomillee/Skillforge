@@ -104,7 +104,7 @@ export function Dashboard() {
           </div>
           <p className="small muted" style={{ marginTop: 12 }}>
             Vert : notions démontrées par des exercices réussis. Bleu : notions disponibles. Le reste du programme est prévu et n'est pas encore jouable —{" "}
-            <a href="#/programme">voir la matrice de couverture</a>.
+            <a href="#/programme">voir la matrice de couverture</a> ou la <a href="#/carte">carte des compétences</a>.
           </p>
 
           <h2 style={{ marginTop: 28 }}>Preuves de maîtrise récentes</h2>

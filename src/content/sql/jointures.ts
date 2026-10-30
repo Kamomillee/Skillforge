@@ -242,6 +242,25 @@ export const lessonJointures: Lesson = {
           title: "Pourquoi pas des diagrammes de Venn ?",
           md: "Les cercles de Venn représentent des ensembles de valeurs, pas des paires de lignes : ils ne montrent ni les doublons, ni les NULL. La visualisation suivante montre les vraies lignes.",
         },
+        {
+          type: "matching",
+          id: "choisir-jointure",
+          prompt: "Pour chaque besoin, choisis l'écriture adaptée.",
+          pairs: [
+            { id: "p1", left: "Toutes les commandes, avec le nom de leur client", answer: "inner" },
+            { id: "p2", left: "Tous les clients, y compris ceux qui n'ont jamais commandé", answer: "left" },
+            { id: "p3", left: "Les produits qui n'ont jamais été vendus", answer: "anti" },
+            { id: "p4", left: "Le nombre de commandes de chaque client, 0 compris", answer: "count" },
+          ],
+          options: [
+            { id: "inner", label: "INNER JOIN" },
+            { id: "left", label: "LEFT JOIN" },
+            { id: "anti", label: "LEFT JOIN … WHERE droite.id IS NULL" },
+            { id: "count", label: "LEFT JOIN + COUNT(droite.id)" },
+          ],
+          explanation:
+            "Chaque commande a un client : INNER JOIN suffit. Pour garder les lignes sans correspondance, il faut LEFT JOIN ; pour ne garder **que** celles-là, on filtre les NULL ; et pour compter 0, on compte une colonne de droite (COUNT ignore les NULL), pas `*`.",
+        },
       ],
     },
     {

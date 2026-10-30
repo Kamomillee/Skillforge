@@ -16,7 +16,7 @@ export const masteryLabel: Record<MasteryLevel, string> = {
 };
 
 export interface Evidence {
-  kind: "exercice-autonome" | "exercice-guide" | "debogage" | "validation" | "prediction" | "explication" | "revision";
+  kind: "exercice-autonome" | "exercice-guide" | "debogage" | "validation" | "prediction" | "explication" | "revision" | "activite";
   label: string;
   at: string;
   /** Preuve vérifiée par tests ou auto-déclarée. */
@@ -60,6 +60,8 @@ export function estimateMastery(
   for (const e of ctx.events) {
     if (e.type === "prediction" && e.lessonId && lessonIds.has(e.lessonId) && e.data?.correct)
       evidence.push({ kind: "prediction", label: "Prédiction correcte du résultat d'un programme", at: e.at, verified: true });
+    if (e.type === "activity" && e.lessonId && lessonIds.has(e.lessonId) && e.data?.correct && e.data?.first)
+      evidence.push({ kind: "activite", label: `${e.data?.label ?? "Activité"} réussie${Number(e.data?.attempt) > 1 ? ` au ${e.data?.attempt}e essai` : " du premier coup"}`, at: e.at, verified: true });
     if (e.type === "explain" && e.lessonId && lessonIds.has(e.lessonId))
       evidence.push({ kind: "explication", label: `Explication rédigée (auto-évaluée : ${e.data?.checked ?? 0} critères)`, at: e.at, verified: false });
   }

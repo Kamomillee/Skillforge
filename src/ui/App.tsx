@@ -10,6 +10,7 @@ import { Settings } from "./pages/Settings";
 import { ReviewPage } from "./pages/ReviewPage";
 import { LessonsPage } from "./pages/LessonsPage";
 import { ProjectPage } from "./pages/ProjectPage";
+import { SkillMap } from "./pages/SkillMap";
 
 /** Mesure du temps actif : page visible ET interaction dans la dernière minute. */
 function useActivityTracker() {
@@ -37,6 +38,7 @@ export function App() {
   const nav = [
     { href: "#/tableau", label: "Tableau de bord", name: "tableau" },
     { href: "#/lecons", label: "Leçons", name: "lecons" },
+    { href: "#/carte", label: "Carte", name: "carte" },
     { href: "#/programme", label: "Programme", name: "programme" },
     { href: "#/parametres", label: "Paramètres", name: "parametres" },
   ];
@@ -61,6 +63,9 @@ export function App() {
     case "projet":
       page = <ProjectPage route={route} />;
       break;
+    case "carte":
+      page = <SkillMap route={route} />;
+      break;
     case "programme":
       page = <Curriculum />;
       break;
@@ -80,7 +85,7 @@ export function App() {
   }
 
   useEffect(() => {
-    const titles: Record<string, string> = { tableau: "Tableau de bord", lecon: "Leçon", programme: "Programme", parametres: "Paramètres", onboarding: "Mon parcours", revision: "Révision", lecons: "Leçons", projet: "Projet" };
+    const titles: Record<string, string> = { tableau: "Tableau de bord", lecon: "Leçon", programme: "Programme", parametres: "Paramètres", onboarding: "Mon parcours", revision: "Révision", lecons: "Leçons", projet: "Projet", carte: "Carte des compétences" };
     document.title = titles[route.name] ? `${titles[route.name]} · SkillForge AI` : "SkillForge AI";
   }, [route.name]);
 
@@ -101,7 +106,7 @@ export function App() {
               <path d="M7 23l9-14 9 14" stroke="white" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </span>
-          SkillForge AI
+          <span className="brand-text">SkillForge AI</span>
         </a>
         <nav className="topnav" aria-label="Navigation principale">
           {nav.map((n) => (

@@ -9,6 +9,7 @@ import { ResultTable, SqlErrorCard } from "./SqlParts";
 import { SqlSteps } from "../viz/SqlSteps";
 import { JoinViz } from "../viz/JoinViz";
 import { projectById } from "../../content";
+import { ChartQuestion, FillCode, Matching, Ordering } from "./Activities";
 
 type PredictionBlock = Extract<LessonBlock, { type: "prediction" }>;
 type ExplainBlockT = Extract<LessonBlock, { type: "explain" }>;
@@ -207,6 +208,14 @@ export function LessonBlockView({ block, lesson, onOpenExercise }: { block: Less
       return <SqlSteps title={block.title} stages={block.stages} />;
     case "join-viz":
       return <JoinViz title={block.title} />;
+    case "ordering":
+      return <Ordering block={block} lesson={lesson} />;
+    case "matching":
+      return <Matching block={block} lesson={lesson} />;
+    case "chart-question":
+      return <ChartQuestion block={block} lesson={lesson} />;
+    case "fill-code":
+      return <FillCode block={block} lesson={lesson} />;
     case "prediction":
       return <Prediction block={block} lesson={lesson} />;
     case "explain":

@@ -25,3 +25,11 @@ test("mobile : requête SQL, tableau de résultats sans débordement de page, é
   await expect(page.locator(".wb-head h2")).toHaveText("Les 5 produits les plus rentables");
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
 });
+
+test("mobile : carte des compétences et activités sans débordement horizontal", async ({ page }) => {
+  for (const url of ["/#/carte", "/#/carte/sql.b/sql.b.agregations", "/#/lecon/sql-requetes-jointures/intuition"]) {
+    await page.goto(url);
+    await page.locator("h1").first().waitFor();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), url).toBe(false);
+  }
+});

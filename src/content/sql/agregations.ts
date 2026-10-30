@@ -204,6 +204,19 @@ export const lessonAgregations: Lesson = {
           type: "text",
           md: "Imagine les lignes de commande imprimées sur des fiches. **GROUP BY produit_id** les répartit en piles, une par produit. Une [[agrégat|fonction d'agrégation]] calcule ensuite une valeur par pile : le nombre de fiches (`COUNT`), la somme des quantités (`SUM`)…\n\n- **WHERE** retire des fiches **avant** de faire les piles.\n- **HAVING** retire des piles entières **après** le calcul.\n\nLe résultat a une ligne par pile : sa [[granularité]] est le produit.",
         },
+        {
+          type: "fill-code",
+          id: "trous-group-by",
+          language: "sql",
+          prompt: "Complète la requête : **nombre de lignes de commande** et **quantité totale** par produit, en ne gardant que les produits vendus à **au moins 60 unités**.",
+          template: "SELECT produit_id, {{1}}(*) AS nb_lignes, SUM(quantite) AS unites\nFROM lignes_commande\nGROUP BY {{2}}\n{{3}} SUM(quantite) >= 60;",
+          blanks: [
+            { id: "1", accept: ["COUNT"], hint: "la fonction qui compte des lignes" },
+            { id: "2", accept: ["produit_id", "1", "lignes_commande.produit_id"], hint: "la colonne qui définit une pile" },
+            { id: "3", accept: ["HAVING"], hint: "le filtre qui s'applique aux piles, après le calcul" },
+          ],
+          explanation: "COUNT(*) compte les fiches de chaque pile, GROUP BY produit_id fait une pile par produit, HAVING filtre les piles après le calcul de SUM.",
+        },
       ],
     },
     {
@@ -264,6 +277,22 @@ export const lessonAgregations: Lesson = {
        MIN(date_commande)  AS premiere,
        MAX(date_commande)  AS derniere
 FROM commandes;`,
+        },
+        {
+          type: "chart-question",
+          id: "graphique-ca-categorie",
+          title: "Chiffre d'affaires par catégorie (commandes non annulées)",
+          sql: "SELECT p.categorie, ROUND(SUM(l.quantite * l.prix_unitaire), 2) AS ca\nFROM lignes_commande AS l\nJOIN produits AS p USING (produit_id)\nJOIN commandes AS o USING (commande_id)\nWHERE o.statut <> 'annulee'\nGROUP BY p.categorie\nORDER BY ca DESC;",
+          unit: "CHF",
+          question: "Les coffrets ont le deuxième chiffre d'affaires. Que peut-on en conclure ?",
+          choices: [
+            { id: "a", label: "Les coffrets sont la deuxième catégorie la plus rentable." },
+            { id: "b", label: "Les coffrets rapportent le deuxième montant de ventes ; leur rentabilité ne se lit pas sur ce graphique." },
+            { id: "c", label: "Les coffrets sont la deuxième catégorie la plus vendue en nombre d'unités." },
+          ],
+          answer: "b",
+          explanation:
+            "Le graphique mesure des **ventes** (quantité × prix facturé). La rentabilité dépend aussi du coût : calculée avec `cout_unitaire`, la marge du café dépasse celle des coffrets. Et le nombre d'unités est une autre mesure encore. Toujours vérifier **ce que mesure** l'axe avant de conclure.",
         },
       ],
     },

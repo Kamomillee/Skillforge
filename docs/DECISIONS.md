@@ -51,6 +51,14 @@ Format court : contexte → décision → conséquences. Les décisions sont ré
 - Les cas cachés n'affichent jamais leurs lignes : seulement le nombre de lignes attendues et obtenues.
 - Les **pistes** (erreurs fréquentes) viennent d'abord de la vérification échouée, puis sont précisées par des indices lus dans la requête (`= NULL`, `COUNT(*)` après `LEFT JOIN`) ; elles n'influencent jamais la réussite.
 
+## D12 — Activités : preuves, pas niveaux
+- Une activité réussie (classement, association, lecture de graphique, code à compléter) est une preuve **vérifiée** mais légère : elle apparaît dans « Pourquoi ce statut ? » et ne fait jamais passer une notion à « Démontré ». Raison : une réponse à choix se devine ; un exercice avec cas cachés beaucoup moins.
+- Les essais sont illimités (on apprend en se trompant) ; seule la première réussite compte, avec son numéro d'essai.
+
+## D13 — Carte des compétences calculée depuis le programme
+- Pas de bibliothèque de graphes : la mise en page est une grille (un rang par domaine, une colonne par module) dans un ordre de rangs fixe choisi pour que les dépendances entre domaines relient des rangs voisins. Lisible, stable d'une visite à l'autre, et testable.
+- Le zoom est **sémantique** (domaines → module → notion) et adressable par URL, plutôt qu'un zoom géométrique : chaque niveau a un contenu accessible au clavier et un équivalent liste.
+
 ## D11 — Projet : étapes = exercices versionnés + journal de décisions
 - Chaque étape de projet est un exercice SQL ordinaire (`kind: "project"`) : même correction, mêmes tentatives versionnées, même sauvegarde. Une étape réussie sans solution affichée compte comme preuve « Démontré » pour sa notion.
 - Le journal de décisions est sauvegardé par étape (clé `journal:<projet>:<étape>`) : deux onglets ne peuvent s'écraser qu'au niveau d'un même champ, et c'est le dernier enregistrement qui gagne (voir LIMITES).

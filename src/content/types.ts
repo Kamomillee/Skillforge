@@ -183,7 +183,48 @@ export type LessonBlock =
   | { type: "sql-steps"; title: string; stages: { clause: string; label: string; sql: string; note: string }[] }
   | { type: "join-viz"; title: string }
   | { type: "explain"; id: string; prompt: string; criteria: string[] }
-  | { type: "project"; title: string; md: string; projectId?: string };
+  | { type: "project"; title: string; md: string; projectId?: string }
+  // ---- Activités réutilisables (tous domaines) ----
+  | { type: "ordering"; id: string; prompt: string; items: { id: string; label: string }[]; /** ordre correct (ids) */ answer: string[]; explanation: string }
+  | {
+      type: "matching";
+      id: string;
+      prompt: string;
+      pairs: { id: string; left: string; answer: string }[];
+      options: { id: string; label: string }[];
+      explanation: string;
+    }
+  | {
+      type: "chart-question";
+      id: string;
+      title: string;
+      /** Requête qui calcule les données (exécutée en direct, deux colonnes : libellé, valeur) ou données fixes. */
+      sql?: string;
+      data?: { label: string; value: number }[];
+      unit?: string;
+      question: string;
+      choices: { id: string; label: string }[];
+      answer: string;
+      explanation: string;
+    }
+  | {
+      type: "fill-code";
+      id: string;
+      prompt: string;
+      language: "python" | "sql";
+      /** Gabarit avec des trous {{id}}. */
+      template: string;
+      blanks: { id: string; accept: string[]; hint: string }[];
+      explanation: string;
+    };
+
+export type ActivityBlock = Extract<LessonBlock, { type: "ordering" | "matching" | "chart-question" | "fill-code" }>;
+export const activityKindLabel: Record<ActivityBlock["type"], string> = {
+  ordering: "Classement",
+  matching: "Association",
+  "chart-question": "Lecture de graphique",
+  "fill-code": "Code à compléter",
+};
 
 /** Les 10 temps de la boucle pédagogique. */
 export const loopStages = [

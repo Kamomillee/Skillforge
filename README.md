@@ -2,7 +2,7 @@
 
 Plateforme de formation interactive en français : Python pour les données, SQL, applications LLM (RAG, outils, évaluation), BI / Power BI et machine learning appliqué. Public : étudiant·e de bachelor en systèmes d'information et business analytics qui veut comprendre, modifier et expliquer le code qu'il ou elle produit.
 
-> **État : étape 2 sur 7.** Jouables de bout en bout : une leçon Python (boucles) et trois leçons SQL (SELECT/WHERE/NULL, agrégations, jointures) sur un vrai PostgreSQL exécuté dans le navigateur, plus le projet SQL « Base de données d'une PME » (5 questions métier vérifiées, journal de décisions, export Markdown). Le reste du programme est listé dans la [matrice de couverture](docs/COUVERTURE.md) avec son statut réel.
+> **État : étape 3 sur 7.** Nouveau : carte des compétences (zoom, filtres, vue locale) et activités réutilisables (classement, association, lecture de graphique, code à compléter). Jouables de bout en bout : une leçon Python (boucles) et trois leçons SQL (SELECT/WHERE/NULL, agrégations, jointures) sur un vrai PostgreSQL exécuté dans le navigateur, plus le projet SQL « Base de données d'une PME » (5 questions métier vérifiées, journal de décisions, export Markdown). Le reste du programme est listé dans la [matrice de couverture](docs/COUVERTURE.md) avec son statut réel.
 
 ## Démarrage
 
@@ -37,8 +37,8 @@ Cross-Origin-Embedder-Policy: require-corp
 
 ```bash
 pnpm typecheck        # TypeScript strict
-pnpm test             # 150 tests : contenus Python (Pyodide) et SQL (PGlite) exécutés réellement, logique, stockage, couverture
-pnpm build && pnpm test:e2e   # 14 tests Playwright dans Chromium (desktop + mobile)
+pnpm test             # 160 tests : contenus Python (Pyodide) et SQL (PGlite) exécutés réellement, logique, stockage, couverture
+pnpm build && pnpm test:e2e   # 17 tests Playwright dans Chromium (desktop + mobile)
 pnpm docs:couverture  # régénère docs/COUVERTURE.md depuis src/content/curriculum.ts
 ```
 

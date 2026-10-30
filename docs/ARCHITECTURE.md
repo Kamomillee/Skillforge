@@ -53,6 +53,27 @@ content/ : données versionnées, importées par l'UI et par les tests
 - Diagnostic supplémentaire : `print` au lieu de `return`, `___` restants, fonction absente, erreur de syntaxe avec ligne.
 - Le rapport distingue « résultat testé » ; l'avis du tuteur IA (étape 5) sera affiché séparément.
 
+## Cinq domaines : ce qui est commun, ce qui est propre à un domaine
+
+| Élément | Commun à tous les domaines | Propre au domaine |
+|---|---|---|
+| Programme | `content/curriculum.ts` : domaine → module → notion, statuts, `moduleDependencies` (« s'appuie sur ») | liste des notions |
+| Leçon | boucle en 10 temps, blocs `text`, `callout`, `prediction`, `explain`, `exercise`, `project` et **activités** (`ordering`, `matching`, `chart-question`, `fill-code`) | visualisations spécifiques (`trace`, `sql-steps`, `join-viz`…) |
+| Exercice | `id`, `version`, `kind`, `hints` (4 niveaux), `explanation`, `conceptIds` ; tentatives versionnées, brouillons, historique | `language` + champs du moteur (`tests` pour Python, `checks`/`referenceSolution` pour SQL) |
+| Exécution | interface de moteur : `init`, `subscribe(state)`, `isBusy`, `stop`, limite de temps | `runtime/python` (Pyodide), `runtime/sql` (PGlite) |
+| Correction | `GradeReport` unique : statut, cas visibles/cachés, pistes (`misconceptions`) | construction du rapport (`buildReport`, `buildSqlReport`) |
+| Progression | maîtrise explicable, révisions espacées, recommandations, carte | — |
+
+**Brancher un nouveau domaine** (étape 4) : ajouter une valeur à l'union `Exercise` (schéma zod avec `language` littéral), un moteur dans `runtime/<moteur>/` qui expose le même état (`RunnerState`), une fonction qui produit un `GradeReport`, puis une branche dans `Workbench` (exécution + vue du résultat). Le reste (historique, maîtrise, révisions, carte, tableau de bord) fonctionne sans modification. Les laboratoires sans code (BI, choix de configuration LLM) utilisent les activités réutilisables.
+
+## Carte des compétences
+
+`ui/pages/SkillMap.tsx` est calculée, pas dessinée à la main : nœuds = modules et notions du programme, flèches = `moduleDependencies` et prérequis des notions, maîtrise = `estimateMastery` sur les tentatives et événements réels. Trois niveaux de zoom adressables (`#/carte`, `#/carte/<module>`, `#/carte/<module>/<notion>`), filtres (domaines, maîtrise, recherche) et version liste équivalente. La maîtrise est montrée par une icône de remplissage **et** un libellé ; le statut par un cadre plein ou pointillé **et** un libellé.
+
+## Activités réutilisables
+
+`ui/components/Activities.tsx` : classement (boutons Monter/Descendre, annonce vocale), association (listes déroulantes), lecture de graphique (barres + tableau équivalent ; données calculées en direct par une requête quand `sql` est fourni), code à compléter (réponses courtes normalisées par `domain/answers.ts`). Chaque validation est un événement `activity` ; seule la **première réussite** devient une preuve vérifiée (avec le numéro de l'essai). Les activités enrichissent les preuves mais ne font pas changer de niveau de maîtrise à elles seules : seuls les exercices corrigés par tests le peuvent.
+
 ## Correction SQL
 
 1. `SqlRunner.grade` envoie la requête de l'étudiant, la requête de référence et la liste des cas (`checks`, avec `setup` SQL éventuel).

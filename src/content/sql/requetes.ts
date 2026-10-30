@@ -221,6 +221,21 @@ export const lessonSelect: Lesson = {
           type: "text",
           md: "On **écrit** `SELECT … FROM … WHERE … ORDER BY … LIMIT`, mais le moteur raisonne dans un autre ordre :\n\n- **FROM** : quelle table ?\n- **WHERE** : quelles lignes garder ?\n- **SELECT** : quelles colonnes montrer ?\n- **ORDER BY** : dans quel ordre ?\n- **LIMIT** : combien de lignes au maximum ?\n\nCet ordre logique explique beaucoup d'erreurs, par exemple pourquoi un alias défini dans SELECT n'est pas encore connu dans WHERE.",
         },
+        {
+          type: "ordering",
+          id: "ordre-logique-clauses",
+          prompt: "Remets les clauses dans l'**ordre logique** où PostgreSQL les applique (et non dans l'ordre où on les écrit).",
+          items: [
+            { id: "select", label: "SELECT" },
+            { id: "from", label: "FROM" },
+            { id: "limit", label: "LIMIT" },
+            { id: "where", label: "WHERE" },
+            { id: "order", label: "ORDER BY" },
+          ],
+          answer: ["from", "where", "select", "order", "limit"],
+          explanation:
+            "FROM choisit la table, WHERE filtre les lignes, SELECT choisit les colonnes, ORDER BY trie, LIMIT coupe. C'est pourquoi un alias créé dans SELECT est utilisable dans ORDER BY, mais pas dans WHERE.",
+        },
       ],
     },
     {

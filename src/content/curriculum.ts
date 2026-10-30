@@ -672,6 +672,34 @@ for (const d of domains)
 
 export const curriculum: readonly Domain[] = domains;
 
+/**
+ * Dépendances entre modules (« s'appuie sur ») : utilisées par la carte des compétences et pour
+ * expliquer l'ordre du parcours. Les prérequis fins, notion par notion, sont dans `implemented`.
+ */
+export const moduleDependencies: readonly { from: string; to: string; reason: string }[] = [
+  { from: "python.a", to: "python.b", reason: "Structurer un programme suppose de savoir écrire boucles, conditions et fonctions." },
+  { from: "python.b", to: "python.c", reason: "pandas s'utilise dans des fonctions testables et gère les erreurs de données." },
+  { from: "python.b", to: "python.d", reason: "Automatiser des appels d'API exige exceptions, fichiers et découpage en fonctions." },
+  { from: "sql.b", to: "sql.c", reason: "Modifier une base suppose de savoir interroger et vérifier son contenu." },
+  { from: "sql.a", to: "sql.c", reason: "Créer des tables demande le modèle relationnel (clés, contraintes)." },
+  { from: "sql.b", to: "sql.d", reason: "Les indicateurs métier combinent filtres, agrégations et jointures." },
+  { from: "llm.a", to: "llm.b", reason: "Concevoir une application demande de connaître tokens, contexte et limites des modèles." },
+  { from: "python.d", to: "llm.b", reason: "Une application LLM appelle une API depuis du code serveur." },
+  { from: "llm.b", to: "llm.c", reason: "Le RAG est une architecture d'application LLM." },
+  { from: "llm.b", to: "llm.d", reason: "Les outils prolongent les appels de modèle structurés." },
+  { from: "llm.c", to: "llm.e", reason: "Évaluer et sécuriser suppose un système RAG à tester." },
+  { from: "llm.d", to: "llm.e", reason: "Les agents posent les risques de sécurité les plus importants." },
+  { from: "bi.a", to: "bi.b", reason: "On modélise pour répondre à une question métier définie." },
+  { from: "sql.b", to: "bi.b", reason: "Préparer et relier des tables reprend les jointures et agrégations SQL." },
+  { from: "bi.b", to: "bi.c", reason: "DAX calcule sur un modèle en étoile." },
+  { from: "bi.c", to: "bi.d", reason: "Les visuels affichent des mesures DAX." },
+  { from: "ml.a", to: "ml.b", reason: "Préparer des données suppose de savoir ce qu'on cherche à prédire." },
+  { from: "python.c", to: "ml.b", reason: "La préparation se fait avec pandas." },
+  { from: "ml.b", to: "ml.c", reason: "Un modèle s'entraîne sur des données préparées et séparées." },
+  { from: "ml.c", to: "ml.d", reason: "On évalue des modèles entraînés." },
+  { from: "ml.d", to: "ml.e", reason: "On n'utilise qu'un modèle évalué." },
+];
+
 export const domainById = Object.fromEntries(domains.map((d) => [d.id, d])) as Record<DomainId, Domain>;
 
 export function allNotions() {

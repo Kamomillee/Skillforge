@@ -6,7 +6,7 @@ import { exercisesJointures, lessonJointures } from "./sql/jointures";
 import { exercisesProjetPme, projetPme } from "./sql/projet-pme";
 
 export * from "./types";
-export { curriculum, domainById, allNotions, moduleById, coverageStats } from "./curriculum";
+export { curriculum, domainById, allNotions, moduleById, coverageStats, moduleDependencies } from "./curriculum";
 
 export const lessons: Lesson[] = [lessonBoucles, lessonSelect, lessonAgregations, lessonJointures];
 export const projects: Project[] = [projetPme];

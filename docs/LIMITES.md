@@ -19,11 +19,16 @@
 - **Dialecte** : PostgreSQL 18.6. Ce qui est appris est transposable, mais quelques fonctions (`to_char`, `::` pour les conversions) diffèrent dans d'autres moteurs (SQL Server, MySQL) ; les leçons le signalent quand c'est le cas.
 - Le jeu de données est **synthétique** (voir [DONNEES.md](DONNEES.md)) : les ordres de grandeur sont plausibles, pas réalistes au sens statistique.
 
+## Carte des compétences
+- Les prérequis fins ne sont renseignés que pour les notions jouables ; pour les autres, seules les dépendances entre modules sont montrées.
+- La vue d'ensemble a une largeur fixe (~1 100 px) : sur téléphone elle défile horizontalement dans son cadre ; la version liste est plus confortable.
+
 ## Correction
 - La correction s'exécute dans le navigateur : un étudiant peut lire les tests cachés dans les outils de développement. C'est acceptable pour s'entraîner ; une **attestation** de parcours devra être recorrigée côté serveur (étape 7).
 - Le code de l'étudiant et le harnais partagent l'interpréteur : un code malveillant pourrait altérer le harnais. Même conclusion que ci-dessus.
 - Les comparaisons de flottants sont exactes sauf mention `approx` ; les énoncés demandent explicitement l'arrondi.
 - SQL : les requêtes de référence et les données des cas cachés sont dans le bundle ; même conclusion (entraînement oui, attestation non).
+- Activités : la réponse attendue est dans le bundle ; les essais sont illimités. C'est pourquoi elles ne comptent pas pour le niveau de maîtrise.
 - SQL : les pistes d'erreurs fréquentes sont des indications heuristiques (vérification échouée + motifs lus dans la requête) ; elles peuvent manquer ou être imprécises, la réussite elle-même ne dépend que des résultats.
 
 ## Progression et données
