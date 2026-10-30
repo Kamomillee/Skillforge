@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useApp } from "../app-context";
+import { AccountPanel, ConsumptionPanel, MyReports } from "../components/Account";
 import { ConfirmDialog } from "../components/Dialog";
 import { navigate } from "../router";
 
@@ -86,11 +87,16 @@ export function Settings() {
         </fieldset>
       </section>
 
+      <AccountPanel />
+      <ConsumptionPanel />
+      <MyReports />
+
       <section className="panel" style={{ marginBottom: 20 }}>
         <h2>Tes données</h2>
         <p className="small">
-          Ta progression (profil, brouillons, tentatives, révisions, notes d'explication) est stockée <strong>uniquement dans ce navigateur</strong> (IndexedDB). Rien n'est envoyé à un
-          serveur ni à un fournisseur d'IA. Effacer les données du site dans le navigateur les supprime aussi.
+          Ta progression (profil, brouillons, tentatives, révisions, notes d'explication) est stockée <strong>dans ce navigateur</strong> (IndexedDB). Elle n'est envoyée au serveur que si tu
+          te connectes à un compte et synchronises ; au fournisseur d'IA, seul le contexte de l'exercice en cours part quand tu interroges le tuteur IA. Effacer les données du site dans le
+          navigateur les supprime aussi.
         </p>
         <div className="row">
           <button className="btn" onClick={exportData}>
@@ -127,6 +133,8 @@ export function Settings() {
           .
         </p>
       </section>
+
+      <Diagnostic />
 
       <section className="panel">
         <h2>Raccourcis clavier</h2>
@@ -182,5 +190,48 @@ export function Settings() {
         onCancel={() => setConfirmDelete(false)}
       />
     </div>
+  );
+}
+
+/** Erreurs techniques récentes de ce navigateur (message et page seulement), pour les décrire dans un signalement. */
+function Diagnostic() {
+  const [errors, setErrors] = useState<{ at: string; message: string; route: string }[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("sf-erreurs") ?? "[]");
+    } catch {
+      return [];
+    }
+  });
+  return (
+    <section className="panel" style={{ marginBottom: 20 }} aria-labelledby="diag-titre">
+      <h2 id="diag-titre">Diagnostic</h2>
+      {errors.length ? (
+        <>
+          <p className="small">Erreurs techniques récentes de l'application dans ce navigateur (message et page seulement ; jamais ton code). Elles sont aussi transmises au serveur s'il existe.</p>
+          <ul className="small">
+            {errors.map((e, i) => (
+              <li key={i}>
+                {new Date(e.at).toLocaleString("fr-CH")} · <code>{e.route || "#/"}</code> · {e.message}
+              </li>
+            ))}
+          </ul>
+          <button
+            className="btn sm"
+            onClick={() => {
+              try {
+                localStorage.removeItem("sf-erreurs");
+              } catch {
+                /* rien */
+              }
+              setErrors([]);
+            }}
+          >
+            Effacer
+          </button>
+        </>
+      ) : (
+        <p className="small">Aucune erreur technique enregistrée dans ce navigateur.</p>
+      )}
+    </section>
   );
 }

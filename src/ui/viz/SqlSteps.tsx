@@ -67,7 +67,7 @@ export function SqlSteps({ title, stages }: { title: string; stages: Stage[] }) 
               </li>
             ))}
           </ol>
-          <pre className="codeblock" style={{ margin: "10px 0" }}>
+          <pre tabIndex={0} className="codeblock" style={{ margin: "10px 0" }}>
             {stage.label}
           </pre>
           <div className="tracer-note" aria-live="polite" style={{ padding: 0, border: 0 }}>

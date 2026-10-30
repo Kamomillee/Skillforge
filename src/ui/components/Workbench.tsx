@@ -13,6 +13,7 @@ import { ResultTable, SchemaPanel, SqlErrorCard } from "./SqlParts";
 import { TutorPanel } from "./TutorPanel";
 import { exerciseHref, type RunError } from "../../domain/tutor";
 import { FavButton } from "./Personal";
+import { api, useCompte } from "../../services/serveur";
 
 const kindLabel: Record<Exercise["kind"], string> = {
   guided: "Exercice guidé",
@@ -62,6 +63,8 @@ export function Workbench({
   const [historyOpen, setHistoryOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportText, setReportText] = useState("");
+  const [reportKind, setReportKind] = useState<"exercice" | "tuteur">("exercice");
+  const compte = useCompte();
   const editor = useRef<EditorHandle | null>(null);
   const busy = engineState.kind === "busy" || engine.isBusy;
   const hintsKey = `hints:${draftKey}`;
@@ -177,10 +180,13 @@ export function Workbench({
   }
 
   async function sendReport() {
-    await store.addEvent({ type: "report", exerciseId: ex.id, lessonId: lesson?.id, data: { text: reportText.slice(0, 2000), exerciseVersion: ex.version } });
+    const text = reportText.trim().slice(0, 2000);
+    await store.addEvent({ type: "report", exerciseId: ex.id, lessonId: lesson?.id, data: { text, exerciseVersion: ex.version, kind: reportKind } });
+    // Connecté : le signalement part aussi à l'équipe pédagogique (suivi dans Paramètres). Sinon, il reste local, et on le dit.
+    const sent = compte.kind === "connecte" ? await api("POST", "/api/signalements", { kind: reportKind, target: ex.id, targetVersion: ex.version, message: text }) : null;
     setReportOpen(false);
     setReportText("");
-    toast("Signalement enregistré localement. Merci !");
+    toast(sent?.ok ? "Signalement envoyé à l'équipe pédagogique. Suivi dans Paramètres. Merci !" : sent ? `Signalement enregistré localement (envoi impossible : ${sent.erreur}).` : "Signalement enregistré localement. Merci !");
   }
 
   return (
@@ -303,6 +309,7 @@ export function Workbench({
             hintLevel={hintLevel}
             onHint={revealHint}
             onReport={(t) => {
+              setReportKind("tuteur");
               setReportText(t);
               setReportOpen(true);
             }}
@@ -323,7 +330,13 @@ export function Workbench({
 
           <p className="small muted" style={{ marginTop: 16 }}>
             Les résultats de l'onglet « Tests » sont <strong>testés</strong> ({isSql ? "ta requête et la requête de référence exécutées sur les mêmes données, dans ton navigateur" : "tests déterministes exécutés dans ton navigateur"}). Le tuteur donne un <strong>avis</strong>, séparé et non testé : en cas de désaccord, les tests font foi.{" "}
-            <button className="btn sm ghost" onClick={() => setReportOpen(true)}>
+            <button
+              className="btn sm ghost"
+              onClick={() => {
+                setReportKind("exercice");
+                setReportOpen(true);
+              }}
+            >
               Signaler un problème dans cet exercice
             </button>
           </p>
@@ -403,7 +416,10 @@ export function Workbench({
           Qu'est-ce qui te semble faux (énoncé, test, correction) ?
           <textarea value={reportText} onChange={(e) => setReportText(e.target.value)} maxLength={2000} />
         </label>
-        <p className="small muted">Le signalement est enregistré dans ce navigateur, avec la version de l'exercice, et inclus dans l'export de tes données.</p>
+        <p className="small muted">
+          Le signalement est enregistré dans ce navigateur avec la version de l'exercice
+          {compte.kind === "connecte" ? ", et envoyé à l'équipe pédagogique : tu suivras sa réponse dans Paramètres." : ". Connecté à un compte, il serait aussi envoyé à l'équipe pédagogique."}
+        </p>
       </Dialog>
     </section>
   );

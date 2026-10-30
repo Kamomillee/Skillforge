@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble (étapes 1 et 2)
 
-Application web statique (Vite + React + TypeScript). Python s'exécute **dans le navigateur de l'étudiant**, dans un Web Worker Pyodide ; SQL dans un second Web Worker PGlite (PostgreSQL 18.6). La progression est stockée localement (IndexedDB). Il n'y a pas encore de serveur : il arrivera avec le tuteur IA (étape 5) et les comptes (étape 7).
+Application web statique (Vite + React + TypeScript). Python s'exécute **dans le navigateur de l'étudiant**, dans un Web Worker Pyodide ; SQL dans un second Web Worker PGlite (PostgreSQL 18.6). La progression est stockée localement (IndexedDB). Un serveur **optionnel** (`server/`, depuis l'étape 5) ajoute le tuteur IA, puis à l'étape 7 les comptes, la synchronisation et l'administration ; sans lui, tout le parcours fonctionne.
 
 ```
 ┌────────────── Thread principal (React) ──────────────┐        ┌──── Web Worker « python » ────┐
@@ -100,6 +100,23 @@ Les **visualisations SQL** n'inventent pas de lignes : `viz/SqlSteps.tsx` exécu
 - `domain/projects.ts` : statut d'une étape (vérifiée / rédigée), clés du journal et des rédactions, tableau d'évaluation calculé depuis les tentatives.
 - `content/entretien.ts` (banque de questions, profils), `domain/interview.ts` (correction en 5 critères, export Markdown), `ui/pages/Interview.tsx` (`#/entretien`, `#/entretien/session`, `#/entretien/bilan/<id>` ; session en cours dans `kv` `entretien:en-cours`, sessions terminées dans `entretien:sessions`).
 - `domain/portfolio.ts` + `ui/pages/Portfolio.tsx` (`#/portfolio`) : portfolio recalculé à chaque ouverture, exports README et JSON.
+
+## Serveur et comptes (étape 7)
+
+```
+navigateur ── /api (cookie sf_session, en-tête x-skillforge) ──► server/app.ts  createApp({ db, provider, logger, config })
+                                                                  ├─ comptes.ts      inscription, connexion (scrypt), sessions (hachage du jeton)
+                                                                  ├─ quotas.ts       budget IA par compte et par jour, consommation
+                                                                  ├─ tuteur.ts       validation du contexte, prompts, limites ; claude.ts (SDK)
+                                                                  ├─ observabilite.ts journaux JSON (champs typés, masquage), métriques
+                                                                  └─ db.ts           node:sqlite : schéma, purge (conservation)
+```
+
+- `createApp` n'a aucun état global : les tests (`tests/unit/serveur-comptes.test.ts`) le lancent sur un port éphémère avec une base en mémoire et un fournisseur simulé ; `main.ts` ne fait que lire l'environnement.
+- Routes : `/api/sante`, `/api/comptes`, `/api/session`, `/api/moi` (+ `/export`), `/api/progression`, `/api/consommation`, `/api/tuteur`, `/api/signalements[/:id]`, `/api/admin/{signalements[/:id],statistiques,metriques}`, `/api/erreurs-client`.
+- Tables : `users`, `sessions`, `progress` (instantané + révision), `ai_runs` (jetons, jamais de texte), `reports`. Suppression d'un compte : cascade, signalements anonymisés (`ON DELETE SET NULL`).
+- Navigateur : `services/serveur.ts` (client, état du compte partagé, journal des erreurs), `domain/sync.ts` (empreinte et table de décision, pure et testée), `services/sync.ts` (envoi, récupération, conflit), `ui/components/Account.tsx` (compte, consommation, mes signalements), `ui/pages/Admin.tsx` (`#/admin`), `domain/admin.ts` (inventaire des contenus).
+- En-têtes sur toutes les réponses : COOP/COEP (Pyodide), CSP, `nosniff`, `Referrer-Policy`, `Permissions-Policy`.
 
 ## Modèle de données (IndexedDB `skillforge`, version 1)
 

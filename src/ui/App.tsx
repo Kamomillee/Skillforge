@@ -14,6 +14,8 @@ import { SkillMap } from "./pages/SkillMap";
 import { Notebook } from "./pages/Notebook";
 import { Interview } from "./pages/Interview";
 import { Portfolio } from "./pages/Portfolio";
+import { Admin } from "./pages/Admin";
+import { useCompte } from "../services/serveur";
 
 /** Mesure du temps actif : page visible ET interaction dans la dernière minute. */
 function useActivityTracker() {
@@ -37,6 +39,7 @@ export function App() {
   const route = useRoute();
   const { data, runnerState, sqlState } = useApp();
   useActivityTracker();
+  const compte = useCompte();
 
   const nav = [
     { href: "#/tableau", label: "Tableau de bord", name: "tableau" },
@@ -47,6 +50,7 @@ export function App() {
     { href: "#/portfolio", label: "Portfolio", name: "portfolio" },
     { href: "#/programme", label: "Programme", name: "programme" },
     { href: "#/parametres", label: "Paramètres", name: "parametres" },
+    ...(compte.kind === "connecte" && compte.user.role === "admin" ? [{ href: "#/admin", label: "Administration", name: "admin" }] : []),
   ];
 
   let page;
@@ -90,6 +94,9 @@ export function App() {
     case "revision":
       page = <ReviewPage route={route} />;
       break;
+    case "admin":
+      page = <Admin />;
+      break;
     default:
       page = (
         <div className="page">
@@ -100,7 +107,7 @@ export function App() {
   }
 
   useEffect(() => {
-    const titles: Record<string, string> = { tableau: "Tableau de bord", lecon: "Leçon", programme: "Programme", parametres: "Paramètres", onboarding: "Mon parcours", revision: "Révision", lecons: "Leçons", projet: "Projet", carte: "Carte des compétences", carnet: "Carnet", entretien: "Entretien", portfolio: "Portfolio" };
+    const titles: Record<string, string> = { tableau: "Tableau de bord", lecon: "Leçon", programme: "Programme", parametres: "Paramètres", onboarding: "Mon parcours", revision: "Révision", lecons: "Leçons", projet: "Projet", carte: "Carte des compétences", carnet: "Carnet", entretien: "Entretien", portfolio: "Portfolio", admin: "Administration" };
     document.title = titles[route.name] ? `${titles[route.name]} · SkillForge AI` : "SkillForge AI";
   }, [route.name]);
 

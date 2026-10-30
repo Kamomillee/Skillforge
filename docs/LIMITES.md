@@ -1,4 +1,4 @@
-# Limites connues (étapes 1 à 6)
+# Limites connues (étapes 1 à 7)
 
 ## Contenu
 - **21 notions sont disponibles** sur 280 (Python 1, SQL 7, LLM 5, BI 4, ML 4), 10 autres sont « testées » via les projets. La matrice de couverture l'indique honnêtement.
@@ -13,21 +13,31 @@
 ## Tuteur et révision (étape 5)
 - **Tuteur local** : il n'invente rien, mais il ne « comprend » pas ton code ; il s'appuie sur les tests, les étiquettes d'erreur et des textes rédigés. Quand aucun test ne pose d'étiquette, il ne peut que pointer le cas échoué et poser une question générale.
 - **Tuteur IA** : disponible seulement avec le serveur SkillForge et une clé configurée côté serveur (`ANTHROPIC_API_KEY`) ; la version statique n'en a pas. Il peut se tromper : ses réponses sont étiquetées, placées sous les résultats testés, et signalables. Il n'a pas été essayé avec une vraie clé pendant le développement (requête vérifiée par tests, pas la qualité des réponses). Les fallbacks côté serveur sont activés : une demande refusée par le modèle principal peut être traitée par un modèle de repli.
-- Les limites de débit du serveur sont en mémoire et par adresse IP (pas de comptes avant l'étape 7).
+- Les limites de débit par minute sont en mémoire et par adresse IP ; le budget quotidien du tuteur IA est, lui, par compte et persistant (étape 7).
 - **Variantes** : 4 tests de validation sur 7 en ont ; les autres révisions reprennent l'exercice d'origine.
 - Mini-test de rappel et cases de fiches : auto-évaluation, jamais comptée comme preuve.
-- Signalements : stockés dans le navigateur et inclus dans l'export ; personne ne les reçoit encore.
+- Signalements : envoyés à l'équipe pédagogique quand l'étudiant est connecté (étape 7) ; sinon stockés dans le navigateur et inclus dans l'export.
 
 ## Projet transversal, entretien, portfolio (étape 6)
 - Les étapes 8 à 10 du projet transversal sont **rédigées**, pas corrigées : elles sont « rédigées » quand leurs champs sont remplis, jamais « vérifiées ».
 - Le tableau de bord se construit dans un outil externe (Power BI, Excel…) : SkillForge vérifie les indicateurs source en SQL, pas l'affichage.
 - Mode entretien : les réponses écrites sont relues par **repères textuels** (mots ou expressions attendus). C'est une aide à la relecture : une idée formulée autrement peut ne pas être repérée. Les critères ne produisent aucune note.
-- Les sessions d'entretien, le portfolio et les rédactions restent dans le navigateur (inclus dans l'export des données) ; pas de partage en ligne avant les comptes (étape 7).
+- Les sessions d'entretien, le portfolio et les rédactions restent dans le navigateur (inclus dans l'export des données) ; synchronisés avec le compte quand l'étudiant en a un, jamais publiés.
 - L'attestation est interne au parcours : elle n'a aucune valeur de certification.
+
+## Comptes, serveur et administration (étape 7)
+- Le serveur est **mono-instance** (SQLite, compteurs de débit et métriques en mémoire). Plusieurs instances demanderaient une base partagée (PostgreSQL) et un stockage commun des limites ; l'interface `Db` est isolée pour ce changement.
+- Pas de réinitialisation de mot de passe par e-mail (aucun envoi d'e-mail configuré) ni de vérification de l'adresse ; pas d'authentification à deux facteurs.
+- La synchronisation transfère toute la progression (instantané JSON, 2 Mo maximum) ; au-delà, il faudra une synchronisation par enregistrement.
+- Le choix « Prendre le compte » remplace la progression locale après téléchargement d'une copie : il n'y a pas de fusion automatique des deux versions.
+- Administration : les contenus se modifient dans le code (relus et testés), pas depuis l'interface ; l'inventaire et les signalements disent quoi corriger. Une seule notion de rôle (étudiant / administration) ; pas d'enseignant limité à une classe.
+- Consommation IA : réelle (jetons renvoyés par l'API) avec Claude, **estimée** (≈ 4 caractères par jeton) avec le tuteur simulé, et affichée comme telle. Aucune facturation n'existe ; le budget est un plafond technique.
+- Les journaux vont sur la sortie standard (JSON) ; pas de collecte centralisée ni d'alertes configurées.
+- Aucun test sur un hébergement réel (HTTPS, proxy) : le serveur a été testé en local, en HTTP.
 
 ## Exécution Python (navigateur)
 - **Mémoire** : pas de limite fine ; seule celle du navigateur s'applique (WebAssembly 32 bits, 4 Go max). Un programme qui alloue énormément peut faire planter le worker ; il est alors recréé.
-- **Réseau** : `pyodide.http` est retiré, mais un code déterminé peut encore appeler `fetch` via le module `js`. Aucun secret n'est présent dans le navigateur, le risque est donc limité à l'étudiant lui-même. À l'étape 7, une politique CSP `connect-src 'self'` sera ajoutée aux en-têtes d'hébergement.
+- **Réseau** : `pyodide.http` est retiré, mais un code déterminé peut encore appeler `fetch` via le module `js`. Aucun secret n'est présent dans le navigateur, le risque est donc limité à l'étudiant lui-même. Servi par le serveur SkillForge, la CSP `connect-src 'self'` bloque les requêtes vers d'autres sites ; les requêtes vers le serveur lui-même portent le cookie de l'étudiant connecté (son propre compte, et les modifications exigent un en-tête que le code peut ajouter : c'est le compte de l'étudiant qui exécute son propre code).
 - **Interruption** : douce seulement avec COOP/COEP ; sinon redémarrage du moteur (état Python perdu, ≈ 2 s).
 - **Premier chargement** : ~10 Mo pour le noyau Python ; scikit-learn et ses dépendances (~30 Mo) ne sont chargés que par les contenus qui les déclarent (démonstration ML, étape 2 du projet churn). La limite de temps est suspendue pendant ce chargement.
 
@@ -52,12 +62,11 @@
 - SQL : les pistes d'erreurs fréquentes sont des indications heuristiques (vérification échouée + motifs lus dans la requête) ; elles peuvent manquer ou être imprécises, la réussite elle-même ne dépend que des résultats.
 
 ## Progression et données
-- Stockée uniquement dans ce navigateur : pas de synchronisation entre appareils, perdue si les données du site sont effacées (export JSON disponible).
+- Sans compte, stockée uniquement dans ce navigateur, perdue si les données du site sont effacées (export JSON disponible). Avec un compte, synchronisée **à la demande** (bouton) : pas de synchronisation automatique en arrière-plan.
 - Le temps actif est une **mesure locale** (page visible + interaction dans la dernière minute), pas une durée d'apprentissage exacte.
-- Les signalements d'erreur pédagogique sont enregistrés localement (inclus dans l'export), pas encore transmis.
 - Journal de décisions du projet : sauvegardé par étape ; si la même étape est modifiée dans deux onglets en même temps, le dernier enregistrement gagne (pas de détection de conflit, contrairement au code des exercices).
 
 ## Interface
 - Testée dans Chromium (desktop 1440×900 et Pixel 7). Firefox et Safari non testés automatiquement à cette étape.
-- Contrastes choisis pour WCAG AA mais pas encore audités avec un outil (prévu à l'étape 7).
+- Accessibilité : audit automatique axe-core (WCAG 2.1 A/AA) sur 15 pages en thème clair et 4 en sombre, sans violation ; navigation clavier testée (lien d'évitement, dialogues). Un audit automatique ne couvre qu'une partie des critères : pas de test avec un vrai lecteur d'écran (NVDA, VoiceOver), éditeur CodeMirror exclu de l'audit (accessibilité propre à la bibliothèque), nœuds de la carte SVG nommés par leur texte visible, parfois tronqué (la version liste donne les titres complets).
 - Le bundle JavaScript principal fait ~1 Mo (non gzippé, 320 Ko gzip), à découper par route ; le moteur SQL est déjà chargé à part (worker).

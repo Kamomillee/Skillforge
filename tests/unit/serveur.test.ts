@@ -80,14 +80,14 @@ describe("serveur — fournisseur Claude (réseau simulé, aucune clé réelle)"
   it("appelle le bon modèle, avec les fallbacks et la bêta correspondante, et lit le texte", async () => {
     const { f, calls } = fakeFetch({ body: message("end_turn", "Regarde ton accumulateur.") });
     const p = claudeProvider({ apiKey: "cle-de-test", fetch: f, maxRetries: 0 });
-    expect(await p.answer("sys", "user")).toEqual({ text: "Regarde ton accumulateur." });
+    expect(await p.answer("sys", "user")).toEqual({ text: "Regarde ton accumulateur.", usage: { inputTokens: 10, outputTokens: 5, estimated: false } });
     expect(calls).toHaveLength(1);
     expect(calls[0].body).toMatchObject({ model: "claude-opus-5-5", fallbacks: "default", output_config: { effort: "low" }, system: "sys" });
     expect(calls[0].headers.get("anthropic-beta")).toContain("server-side-fallback-2026-07-01");
   });
   it("stop_reason refusal : signalé comme refus, pas comme texte", async () => {
     const { f } = fakeFetch({ body: message("refusal", "") });
-    expect(await claudeProvider({ apiKey: "k", fetch: f, maxRetries: 0 }).answer("s", "u")).toEqual({ refused: true });
+    expect(await claudeProvider({ apiKey: "k", fetch: f, maxRetries: 0 }).answer("s", "u")).toEqual({ refused: true, usage: { inputTokens: 10, outputTokens: 5, estimated: false } });
   });
   it("erreurs typées : clé refusée → 503, limite → 429, sans divulguer la clé", async () => {
     const auth = fakeFetch({ status: 401, body: { type: "error", error: { type: "authentication_error", message: "invalid x-api-key" } } });

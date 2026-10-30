@@ -4,6 +4,7 @@
  * ce qui permet de tester toutes les règles sans clé ni facturation.
  */
 import { z } from "zod";
+import { estimateTokens, type Quotas, type Usage } from "./quotas.ts";
 
 export const MODES = ["expliquer", "exemple", "indice", "deboguer", "question", "pratiquer", "entretien"] as const;
 export type Mode = (typeof MODES)[number];
@@ -92,7 +93,7 @@ export function userPrompt(p: Payload): string {
 export interface Provider {
   name: string;
   model: string;
-  answer(system: string, user: string): Promise<{ text: string } | { refused: true }>;
+  answer(system: string, user: string): Promise<{ text: string; usage?: Usage } | { refused: true; usage?: Usage }>;
 }
 
 export class ProviderError extends Error {
@@ -132,17 +133,37 @@ export class Limiter {
 
 export type TutorResult = { status: number; body: { texte: string; modele: string } | { erreur: string } };
 
-export async function handleTutor(raw: unknown, provider: Provider | null, limiter: Limiter, ip: string): Promise<TutorResult> {
+/** Compte à l'origine de la demande : son budget est vérifié avant l'appel et sa consommation enregistrée après. */
+export interface TutorAccount {
+  userId: number;
+  quotas: Quotas;
+  onCall?: (status: string) => void;
+}
+
+export async function handleTutor(raw: unknown, provider: Provider | null, limiter: Limiter, ip: string, account?: TutorAccount): Promise<TutorResult> {
   if (!provider) return { status: 503, body: { erreur: "tuteur IA non configuré sur ce serveur" } };
   const parsed = payloadSchema.safeParse(raw);
   if (!parsed.success) return { status: 400, body: { erreur: "contexte invalide" } };
+  if (account) {
+    const b = account.quotas.check(account.userId);
+    if (!b.ok) return { status: 429, body: { erreur: b.reason } };
+  }
   const lim = limiter.take(ip);
   if (!lim.ok) return { status: 429, body: { erreur: lim.reason } };
+  const record = (status: string, usage?: Usage) => {
+    account?.quotas.record(account.userId, { model: provider.model, mode: parsed.data.mode, status, usage });
+    account?.onCall?.(status);
+  };
   try {
     const r = await provider.answer(systemPrompt(), userPrompt(parsed.data));
-    if ("refused" in r) return { status: 422, body: { erreur: "le modèle a refusé de répondre à cette demande" } };
+    if ("refused" in r) {
+      record("refus", r.usage);
+      return { status: 422, body: { erreur: "le modèle a refusé de répondre à cette demande" } };
+    }
+    record("ok", r.usage);
     return { status: 200, body: { texte: r.text, modele: provider.model } };
   } catch (e) {
+    record("erreur");
     if (e instanceof ProviderError) return { status: e.status, body: { erreur: e.message } };
     return { status: 502, body: { erreur: "erreur du fournisseur" } };
   }
@@ -153,10 +174,11 @@ export function simulatedProvider(): Provider {
   return {
     name: "simule",
     model: "tuteur-simulé",
-    async answer(_system, user) {
+    async answer(system, user) {
       const mode = MODES.find((m) => user.includes(consignes[m])) ?? "expliquer";
       if (user.includes("REFUS-SIMULE")) return { refused: true };
-      return { text: `(Réponse simulée, mode « ${mode} ».) Relis le résultat des tests : que fait ton code quand la liste est vide ?` };
+      const text = `(Réponse simulée, mode « ${mode} ».) Relis le résultat des tests : que fait ton code quand la liste est vide ?`;
+      return { text, usage: { inputTokens: estimateTokens(system + user), outputTokens: estimateTokens(text), estimated: true } };
     },
   };
 }

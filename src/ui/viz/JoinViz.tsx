@@ -48,7 +48,7 @@ export function JoinViz({ title }: { title: string }) {
           </button>
         </div>
       </div>
-      <pre className="codeblock" style={{ margin: "12px 16px" }}>
+      <pre tabIndex={0} className="codeblock" style={{ margin: "12px 16px" }}>
         {`SELECT c.*, o.*\nFROM clients c\n${kind === "inner" ? "INNER JOIN" : "LEFT JOIN"} commandes o ON o.client_id = c.client_id;`}
       </pre>
       {textMode ? (

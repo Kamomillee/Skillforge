@@ -25,14 +25,16 @@ export function claudeProvider(options: { apiKey?: string; fetch?: typeof fetch;
           system,
           messages: [{ role: "user", content: user }],
         });
-        if (msg.stop_reason === "refusal") return { refused: true };
+        // Consommation réelle, telle que facturable par l'API (aucune estimation ici).
+        const usage = { inputTokens: msg.usage.input_tokens, outputTokens: msg.usage.output_tokens, estimated: false };
+        if (msg.stop_reason === "refusal") return { refused: true, usage };
         const text = msg.content
           .filter((b): b is Extract<typeof b, { type: "text" }> => b.type === "text")
           .map((b) => b.text)
           .join("\n")
           .trim();
         if (!text) throw new ProviderError("réponse vide du modèle", 502);
-        return { text };
+        return { text, usage };
       } catch (e) {
         if (e instanceof ProviderError) throw e;
         if (e instanceof Anthropic.AuthenticationError) throw new ProviderError("clé API refusée par le fournisseur", 503);

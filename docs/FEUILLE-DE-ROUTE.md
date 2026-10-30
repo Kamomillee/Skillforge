@@ -8,15 +8,23 @@
 | 4 | Laboratoires ML (scikit-learn dans Pyodide, seuil et coût métier), LLM (RAG avec citations et abstention, modèle **simulé** annoncé), BI (contexte de filtre calculé en SQL, DAX affiché, parcours Power BI Desktop en auto-évaluation) et leurs trois projets | **Terminée** (30/10/2026) — fournisseur LLM réel reporté à l'étape 5 (nécessite le serveur) |
 | 5 | Tuteur contextuel (7 modes, 4 niveaux, local sans IA + Claude en option via un serveur minimal), carnet d'erreurs, favoris, notes, fiches avec mini-test de rappel, variantes paramétrées des tests de validation pour la révision | **Terminée** (30/10/2026) — génération du laboratoire RAG par un vrai modèle encore simulée |
 | 6 | Projet transversal « Copilote data pour une PME » (10 étapes : 7 vérifiées, 3 rédigées, tableau d'évaluation mesuré), mode entretien (4 profils, 8 formats, correction en 5 critères après la session), portfolio généré depuis les preuves (README, JSON, ligne de CV, attestation interne) | **Terminée** (30/10/2026) |
-| 7 | Comptes, isolation, quotas, administration des contenus, audit d'accessibilité, observabilité, CSP | À faire |
+| 7 | Qualité SaaS : comptes facultatifs (serveur, SQLite), isolation par compte, synchronisation sans écrasement, budget IA par compte et consommation réelle, export et suppression des données, administration (signalements, inventaire, statistiques, métriques), journaux structurés, CSP, audit d'accessibilité | **Terminée** (30/10/2026) |
 
 ## État de reprise
 
 Pour reprendre le travail :
-1. `pnpm install && pnpm setup:pyodide && pnpm test && pnpm build && pnpm test:e2e` doit être vert.
-2. Prochaine tâche : étape 7. Comptes et isolation des données (aujourd'hui tout est local au navigateur), quotas du tuteur IA par compte, administration des contenus et circuit des signalements, audit d'accessibilité, observabilité, CSP.
-3. Pour essayer le tuteur IA : `pnpm build && ANTHROPIC_API_KEY=… pnpm serve` (ou `SKILLFORGE_TUTEUR=simule pnpm serve` sans clé), puis http://localhost:8787.
-4. Le contenu SQL restant du module B (DISTINCT, CASE, sous-requêtes, CTE, fenêtres) et le module A (modélisation, 3FN) se rédigent sur le modèle de `src/content/sql/*.ts` ; le moteur et le comparateur sont prêts.
+1. `pnpm install && pnpm setup:pyodide && pnpm test && pnpm build && pnpm test:e2e` doit être vert (les tests e2e lancent aussi le vrai serveur sur le port 8788).
+2. Les 7 étapes du plan sont livrées. La suite est surtout du **contenu** : le curriculum compte 280 notions, dont 21 disponibles et 10 testées via les projets (voir `docs/COUVERTURE.md`). Priorités suggérées : module SQL B restant (DISTINCT, CASE, sous-requêtes, CTE, fenêtres), Python A–C, puis ML (préparation, validation croisée, fuite).
+3. Pour essayer le serveur : `pnpm build && SKILLFORGE_TUTEUR=simule SKILLFORGE_ADMINS=moi@example.ch pnpm serve`, puis http://localhost:8787 → Paramètres → Créer un compte.
+4. Avant une mise en ligne : HTTPS + `SKILLFORGE_COOKIE_SECURE=1`, sauvegarde du fichier SQLite, collecte des journaux ; voir la dette de l'étape 7.
+
+## Dette identifiée à l'étape 7
+- Réinitialisation du mot de passe (envoi d'e-mail), vérification d'adresse, 2FA.
+- Serveur mono-instance (SQLite, limites en mémoire) ; synchronisation par instantané complet (2 Mo max) et à la demande.
+- Rôle enseignant par classe, tableau de bord de classe (agrégats seulement).
+- Éditeur de contenus dans l'interface : volontairement absent (les contenus restent relus et testés dans le code).
+- Accessibilité : tests avec lecteurs d'écran réels ; Firefox et Safari non testés automatiquement.
+- Découper le bundle par route (~1 Mo non compressé).
 
 ## Dette identifiée à l'étape 6
 - Entretien : l'écrit est relu par repères textuels (approximatif, annoncé) ; un retour du tuteur IA sur les réponses écrites serait utile, toujours séparé de la mesure.
@@ -28,8 +36,7 @@ Pour reprendre le travail :
 - Le laboratoire RAG utilise toujours le modèle simulé : brancher la génération sur `/api` (même serveur, même règles) est simple mais doit rester optionnel.
 - Variantes : 4 tests de validation sur 7 (Python boucles, SQL agrégations, SQL requêtes, BI). Les validations ML, LLM et jointures n'en ont pas encore.
 - Le tuteur IA n'a pas été essayé avec une vraie clé dans cet environnement : la requête envoyée est vérifiée par des tests (fetch simulé), pas la qualité des réponses.
-- Signalements (exercice et tuteur) : enregistrés localement et exportés, sans circuit de relecture (étape 7, administration des contenus).
-- Limites du serveur en mémoire (redémarrage = compteurs remis à zéro) ; pas de comptes, donc limite par adresse IP.
+- ~~Signalements sans circuit de relecture ; pas de comptes~~ : traité à l'étape 7.
 
 ## Dette identifiée à l'étape 4
 - LLM : aucun appel à un vrai modèle dans le laboratoire (le serveur existe depuis l'étape 5, voir sa dette) ; recherche lexicale seulement (pas d'embeddings dans le navigateur).

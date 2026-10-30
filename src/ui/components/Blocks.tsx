@@ -38,7 +38,7 @@ export function Prediction({ block, lesson }: { block: PredictionBlock; lesson: 
     <div className="prediction">
       <div className="eyebrow">Prédiction</div>
       <h3 style={{ marginBottom: 8 }}>{block.question}</h3>
-      {block.code && <pre className="codeblock">{block.code}</pre>}
+      {block.code && <pre tabIndex={0} className="codeblock">{block.code}</pre>}
       <fieldset style={{ margin: 0 }} disabled={revealed}>
         <legend className="sr-only">{block.question}</legend>
         <div className="choices">
@@ -127,7 +127,7 @@ export function RunnableCode({ code, packages = [], prelude }: { code: string; p
   }
   return (
     <div style={{ margin: "12px 0" }}>
-      <pre className="codeblock" style={{ marginBottom: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }}>
+      <pre tabIndex={0} className="codeblock" style={{ marginBottom: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }}>
         {code}
       </pre>
       <div className="row" style={{ border: "1px solid var(--line)", borderTop: 0, padding: "6px 10px", borderRadius: "0 0 6px 6px", background: "var(--surface-2)" }}>
@@ -160,7 +160,7 @@ export function RunnableSql({ code }: { code: string }) {
   }
   return (
     <div style={{ margin: "12px 0" }}>
-      <pre className="codeblock" style={{ marginBottom: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }}>
+      <pre tabIndex={0} className="codeblock" style={{ marginBottom: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }}>
         {code}
       </pre>
       <div className="row" style={{ border: "1px solid var(--line)", borderTop: 0, padding: "6px 10px", borderRadius: "0 0 6px 6px", background: "var(--surface-2)" }}>
@@ -206,7 +206,7 @@ export function LessonBlockView({ block, lesson, onOpenExercise }: { block: Less
         )
       ) : (
         <>
-          <pre className="codeblock">{block.code}</pre>
+          <pre tabIndex={0} className="codeblock">{block.code}</pre>
           {block.caption && <p className="caption">{block.caption}</p>}
         </>
       );

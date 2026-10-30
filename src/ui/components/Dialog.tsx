@@ -1,8 +1,9 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 
 /** Boîte de dialogue modale native (<dialog>) : focus piégé et Échap gérés par le navigateur. */
 export function Dialog({ open, onClose, title, children, actions }: { open: boolean; onClose: () => void; title: string; children: ReactNode; actions: ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
@@ -10,8 +11,8 @@ export function Dialog({ open, onClose, title, children, actions }: { open: bool
     if (!open && d.open) d.close();
   }, [open]);
   return (
-    <dialog ref={ref} onClose={onClose} aria-labelledby="dlg-title">
-      <h2 id="dlg-title">{title}</h2>
+    <dialog ref={ref} onClose={onClose} aria-labelledby={titleId}>
+      <h2 id={titleId}>{title}</h2>
       <div style={{ marginBottom: 20 }}>{children}</div>
       <div className="row" style={{ justifyContent: "flex-end" }}>
         {actions}

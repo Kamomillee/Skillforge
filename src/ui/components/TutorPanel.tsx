@@ -5,19 +5,14 @@ import { contextSummary, localTutor, tutorModes, tutorPayload, type RunError, ty
 import type { Attempt } from "../../storage/store";
 import { useApp } from "../app-context";
 import { Md } from "../Md";
+import { api, sante, useCompte } from "../../services/serveur";
 
 /** Disponibilité du tuteur IA : le serveur SkillForge répond sur /api/sante avec une clé configurée côté serveur. */
 type AiStatus = { available: false; reason: string } | { available: true; model: string };
-let aiStatus: Promise<AiStatus> | null = null;
 export function checkAi(): Promise<AiStatus> {
-  aiStatus ??= fetch("/api/sante", { headers: { accept: "application/json" } })
-    .then(async (r) => {
-      if (!r.ok || !(r.headers.get("content-type") ?? "").includes("json")) return { available: false as const, reason: "serveur SkillForge absent (version statique)" };
-      const j = (await r.json()) as { tuteurIA?: boolean; modele?: string };
-      return j.tuteurIA ? { available: true as const, model: j.modele ?? "" } : { available: false as const, reason: "aucune clé API configurée sur le serveur" };
-    })
-    .catch(() => ({ available: false as const, reason: "serveur SkillForge injoignable" }));
-  return aiStatus;
+  return sante().then((s) =>
+    !s ? { available: false as const, reason: "serveur SkillForge absent (version statique)" } : s.tuteurIA ? { available: true as const, model: s.modele ?? "" } : { available: false as const, reason: "aucune clé API configurée sur le serveur" },
+  );
 }
 
 type Shown = { source: "local"; reply: TutorReply } | { source: "ia"; mode: TutorMode; text: string; model: string } | { source: "ia-erreur"; mode: TutorMode; message: string; fallback: TutorReply };
@@ -42,6 +37,8 @@ export function TutorPanel(props: {
   const [useAi, setUseAi] = useState(false);
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState<TutorMode | null>(null);
+  const compte = useCompte();
+  const connected = compte.kind === "connecte";
 
   useEffect(() => void checkAi().then(setAi), []);
   useEffect(() => setShown(null), [props.exercise.id]);
@@ -63,24 +60,14 @@ export function TutorPanel(props: {
     setTurn((t) => t + 1);
     // « Donne un indice » suit l'aide progressive : il débloque le niveau suivant (jusqu'au 3). Le niveau 4 se demande dans « Aide progressive ».
     if (mode === "indice" && props.hintLevel < 3) props.onHint();
-    void store.addEvent({ type: "tutor", exerciseId: props.exercise.id, lessonId: props.lesson?.id, data: { mode, source: useAi && ai?.available ? "ia" : "local" } });
+    void store.addEvent({ type: "tutor", exerciseId: props.exercise.id, lessonId: props.lesson?.id, data: { mode, source: useAi && ai?.available && connected ? "ia" : "local" } });
     const local = localTutor(mode, ctx);
-    if (!(useAi && ai?.available) || mode === "indice") return setShown({ source: "local", reply: local });
+    if (!(useAi && ai?.available && connected) || mode === "indice") return setShown({ source: "local", reply: local });
     setLoading(mode);
-    try {
-      const r = await fetch("/api/tuteur", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(tutorPayload(mode, ctx, question.trim() || undefined)),
-      });
-      const j = (await r.json().catch(() => ({}))) as { texte?: string; modele?: string; erreur?: string };
-      if (!r.ok || !j.texte) setShown({ source: "ia-erreur", mode, message: j.erreur ?? `réponse ${r.status}`, fallback: local });
-      else setShown({ source: "ia", mode, text: j.texte, model: j.modele ?? (ai.available ? ai.model : "") });
-    } catch {
-      setShown({ source: "ia-erreur", mode, message: "serveur injoignable", fallback: local });
-    } finally {
-      setLoading(null);
-    }
+    const r = await api<{ texte: string; modele: string }>("POST", "/api/tuteur", tutorPayload(mode, ctx, question.trim() || undefined));
+    setLoading(null);
+    if (!r.ok || !r.data.texte) setShown({ source: "ia-erreur", mode, message: r.ok ? "réponse vide" : r.erreur, fallback: local });
+    else setShown({ source: "ia", mode, text: r.data.texte, model: r.data.modele ?? (ai.available ? ai.model : "") });
   }
 
   const reply = shown?.source === "local" ? shown.reply : shown?.source === "ia-erreur" ? shown.fallback : undefined;
@@ -107,7 +94,11 @@ export function TutorPanel(props: {
         ))}
       </div>
 
-      {ai?.available ? (
+      {ai?.available && !connected ? (
+        <p className="small muted" style={{ margin: 0 }} data-testid="tutor-ia-compte">
+          Tuteur local. Le tuteur IA est disponible sur ce serveur pour les comptes connectés (budget quotidien par compte) : <a href="#/parametres">se connecter</a>.
+        </p>
+      ) : ai?.available ? (
         <div className="small">
           <label className="tutor-ai-toggle">
             <input type="checkbox" checked={useAi} onChange={(e) => setUseAi(e.target.checked)} />
@@ -168,7 +159,7 @@ function LocalReply({ reply, answer, onAnswer }: { reply: TutorReply; answer: bo
       {reply.code?.map((c, k) => (
         <figure key={k} style={{ margin: "8px 0" }}>
           {c.caption && <figcaption className="small muted">{c.caption}</figcaption>}
-          <pre className="codeblock">{c.text}</pre>
+          <pre tabIndex={0} className="codeblock">{c.text}</pre>
         </figure>
       ))}
       {reply.quiz && (

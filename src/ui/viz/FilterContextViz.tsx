@@ -185,11 +185,11 @@ export function FilterContextViz({ title }: { title: string }) {
           <div className="threshold-grid">
             <div>
               <div className="eyebrow">DAX équivalent (affiché, non exécuté)</div>
-              <pre className="codeblock small">{MESURES[mesure].dax}</pre>
+              <pre tabIndex={0} className="codeblock small">{MESURES[mesure].dax}</pre>
             </div>
             <div>
               <div className="eyebrow">SQL exécuté pour cette cellule</div>
-              <pre className="codeblock small">{celluleSql(mesure, annee, sel)}</pre>
+              <pre tabIndex={0} className="codeblock small">{celluleSql(mesure, annee, sel)}</pre>
               <button className="btn sm" onClick={verifier}>
                 Exécuter cette requête
               </button>

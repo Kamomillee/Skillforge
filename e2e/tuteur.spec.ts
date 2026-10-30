@@ -58,7 +58,9 @@ test("tuteur local : s'appuie sur les tests réels, guide sans donner la solutio
 
 test("tuteur IA (serveur simulé) : étiqueté « peut se tromper », sans solution ni clé dans la requête", async ({ page }) => {
   let sent = "";
-  await page.route("**/api/sante", (r) => r.fulfill({ json: { ok: true, tuteurIA: true, modele: "claude-opus-5-5" } }));
+  await page.route("**/api/sante", (r) => r.fulfill({ json: { ok: true, tuteurIA: true, modele: "claude-opus-5-5", comptes: true } }));
+  // Le tuteur IA est réservé aux comptes connectés (budget par compte) : session simulée.
+  await page.route("**/api/moi", (r) => r.fulfill({ json: { utilisateur: { id: 1, email: "kamo@example.ch", name: "Kamo", role: "etudiant", createdAt: "2026-10-30" } } }));
   await page.route("**/api/tuteur", async (r) => {
     sent = r.request().postData() ?? "";
     await r.fulfill({ json: { texte: "Regarde quelles **commandes** ton filtre garde.", modele: "claude-opus-5-5" } });

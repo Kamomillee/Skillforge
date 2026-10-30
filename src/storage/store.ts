@@ -282,6 +282,11 @@ export class Store {
 
   async importAll(data: Awaited<ReturnType<Store["exportAll"]>>) {
     if (data?.format !== "skillforge-export" || data.formatVersion !== 1) throw new Error("Fichier d'export non reconnu.");
+    // Fichier importé = entrée non fiable : structure vérifiée avant d'effacer quoi que ce soit.
+    const lists = [data.drafts, data.attempts, data.events, data.reviews];
+    if (!data.kv || typeof data.kv !== "object" || Array.isArray(data.kv) || !lists.every(Array.isArray) || !lists.every((l) => l.every((x) => x && typeof x === "object")))
+      throw new Error("Fichier d'export incomplet ou modifié.");
+    if (!data.drafts.every((d) => typeof d.exerciseId === "string") || !data.reviews.every((r) => typeof r.conceptId === "string")) throw new Error("Fichier d'export incomplet ou modifié.");
     await this.clearAll();
     const tx = this.db.transaction(Object.values(STORES), "readwrite");
     for (const [k, v] of Object.entries(data.kv)) tx.objectStore(STORES.kv).put(v, k);

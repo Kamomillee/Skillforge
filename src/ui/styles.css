@@ -9,7 +9,7 @@
   --surface-3: #e7e5df;
   --ink: #1c1d22;
   --ink-2: #4a4c55;
-  --ink-3: #6b6e78;
+  --ink-3: #5d606a;
   --line: #dddbd4;
   --line-strong: #c7c4bb;
   --accent: #334bd6;
@@ -48,7 +48,7 @@
     --surface-3: #2b2e35;
     --ink: #ecedf0;
     --ink-2: #b9bcc6;
-    --ink-3: #8d919c;
+    --ink-3: #a0a4af;
     --line: #2f323a;
     --line-strong: #41454f;
     --accent: #8b9cff;
@@ -76,7 +76,7 @@
   --surface-3: #2b2e35;
   --ink: #ecedf0;
   --ink-2: #b9bcc6;
-  --ink-3: #8d919c;
+  --ink-3: #a0a4af;
   --line: #2f323a;
   --line-strong: #41454f;
   --accent: #8b9cff;
@@ -247,6 +247,9 @@ input[type="text"],
 input[type="number"],
 input[type="date"],
 input[type="search"],
+input[type="email"],
+input[type="password"],
+input:not([type]),
 select,
 textarea {
   font: inherit;
@@ -1997,4 +2000,47 @@ table.result {
 }
 .portfolio-entry h2 {
   margin-top: 0;
+}
+
+/* ---------- Compte, administration ---------- */
+.account-form {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 420px;
+  margin-top: var(--space-3);
+}
+.account-form .btn {
+  justify-self: start;
+}
+.table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.plain-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.admin-report {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+}
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-3);
+}
+.stat-row div {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+}
+.stat-row strong {
+  display: block;
+  font-size: 1.4rem;
 }

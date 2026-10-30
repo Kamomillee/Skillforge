@@ -245,7 +245,7 @@ export function ChartQuestion({ block, lesson }: { block: Of<"chart-question">; 
       {block.sql && (
         <details className="small">
           <summary>Requête qui produit ce graphique</summary>
-          <pre className="codeblock">{block.sql}</pre>
+          <pre tabIndex={0} className="codeblock">{block.sql}</pre>
         </details>
       )}
       <p style={{ fontWeight: 600 }}>{block.question}</p>
@@ -293,7 +293,7 @@ export function FillCode({ block, lesson }: { block: Of<"fill-code">; lesson: Le
   return (
     <Shell block={block} solved={solved} attempts={attempts}>
       <Md text={block.prompt} glossary={lesson.glossary} />
-      <pre className="codeblock fill-code">
+      <pre tabIndex={0} className="codeblock fill-code">
         {parts.map((part, k) => {
           const m = /^\{\{(\w+)\}\}$/.exec(part);
           if (!m) return <span key={k}>{part}</span>;

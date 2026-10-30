@@ -119,19 +119,22 @@ function Overview({ domains: input, mastery }: { domains: Domain[]; mastery: Map
             const p = pos.get(m.id)!;
             const avail = m.notions.filter((n) => playable(n.status));
             const demo = avail.filter((n) => (mastery.get(n.id)?.level ?? 0) >= 3).length;
-            const label = `${d.short} ${m.letter}. ${m.title} : ${avail.length} notion(s) jouable(s) sur ${m.notions.length}, ${demo} démontrée(s)`;
+            const shown = m.title.length > 22 ? `${m.title.slice(0, 21)}…` : m.title;
+            const meta = avail.length ? `${avail.length}/${m.notions.length} jouables` : `${m.notions.length} notions · prévu`;
+            const demoText = avail.length > 0 ? `${demo} démontrée${demo > 1 ? "s" : ""}` : "";
+            // Pas d'aria-label : le nom accessible est le texte visible du nœud (WCAG 2.5.3) ; la version liste donne les titres complets.
             return (
-              <a key={m.id} href={mapHref(m.id)} aria-label={label} className={`map-node${avail.length ? " has-content" : ""}`} data-testid={`map-node-${m.id}`}>
+              <a key={m.id} href={mapHref(m.id)} className={`map-node${avail.length ? " has-content" : ""}`} data-testid={`map-node-${m.id}`}>
                 <rect x={p.x} y={p.y} width={NODE_W} height={NODE_H} rx={8} />
                 <text x={p.x + 10} y={p.y + 20} className="map-node-title">
-                  {m.letter}. {m.title.length > 22 ? `${m.title.slice(0, 21)}…` : m.title}
+                  {m.letter}. {shown}
                 </text>
                 <text x={p.x + 10} y={p.y + 40} className="map-node-meta">
-                  {avail.length ? `${avail.length}/${m.notions.length} jouables` : `${m.notions.length} notions · prévu`}
+                  {meta}
                 </text>
                 {avail.length > 0 && (
                   <text x={p.x + 10} y={p.y + 56} className="map-node-meta">
-                    {demo} démontrée{demo > 1 ? "s" : ""}
+                    {demoText}
                   </text>
                 )}
               </a>
