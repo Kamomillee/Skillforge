@@ -165,6 +165,8 @@ export const misconceptionLabels: Record<string, string> = {
   "ordre-pertinence": "Passages non triés par pertinence",
   "abstention-absente": "Répond même quand aucun passage n'est pertinent",
   "casse-ponctuation": "Mots comparés sans normaliser la casse ou la ponctuation",
+  // BI
+  "contexte-denominateur": "Dénominateur calculé dans un autre contexte de filtre (année, statut ou segment)",
 };
 
 // ---------- Leçons ----------
@@ -193,6 +195,7 @@ export type LessonBlock =
     }
   | { type: "threshold-viz"; title: string }
   | { type: "rag-viz"; title: string }
+  | { type: "filter-context-viz"; title: string }
   | { type: "trace"; title: string; code: string; steps: TraceStep[] }
   | {
       type: "prediction";
@@ -334,4 +337,6 @@ export interface Project {
   deliverables: string[];
   acceptance: string[];
   steps: ProjectStep[];
+  /** Parcours hors de SkillForge (ex. Power BI Desktop) : auto-évaluation déclarative, jamais comptée comme preuve. */
+  selfCheck?: { title: string; intro: string; items: { id: string; label: string }[] };
 }

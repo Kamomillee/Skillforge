@@ -58,13 +58,15 @@ content/ : données versionnées, importées par l'UI et par les tests
 | Élément | Commun à tous les domaines | Propre au domaine |
 |---|---|---|
 | Programme | `content/curriculum.ts` : domaine → module → notion, statuts, `moduleDependencies` (« s'appuie sur ») | liste des notions |
-| Leçon | boucle en 10 temps, blocs `text`, `callout`, `prediction`, `explain`, `exercise`, `project` et **activités** (`ordering`, `matching`, `chart-question`, `fill-code`) | visualisations spécifiques (`trace`, `sql-steps`, `join-viz`…) |
+| Leçon | boucle en 10 temps, blocs `text`, `callout`, `prediction`, `explain`, `exercise`, `project` et **activités** (`ordering`, `matching`, `chart-question`, `fill-code`) | visualisations spécifiques (`trace`, `sql-steps`, `join-viz`, `threshold-viz`, `rag-viz`, `filter-context-viz`) |
 | Exercice | `id`, `version`, `kind`, `hints` (4 niveaux), `explanation`, `conceptIds` ; tentatives versionnées, brouillons, historique | `language` + champs du moteur (`tests` pour Python, `checks`/`referenceSolution` pour SQL) |
 | Exécution | interface de moteur : `init`, `subscribe(state)`, `isBusy`, `stop`, limite de temps | `runtime/python` (Pyodide), `runtime/sql` (PGlite) |
 | Correction | `GradeReport` unique : statut, cas visibles/cachés, pistes (`misconceptions`) | construction du rapport (`buildReport`, `buildSqlReport`) |
 | Progression | maîtrise explicable, révisions espacées, recommandations, carte | — |
 
 **Brancher un nouveau domaine** (étape 4) : ajouter une valeur à l'union `Exercise` (schéma zod avec `language` littéral), un moteur dans `runtime/<moteur>/` qui expose le même état (`RunnerState`), une fonction qui produit un `GradeReport`, puis une branche dans `Workbench` (exécution + vue du résultat). Le reste (historique, maîtrise, révisions, carte, tableau de bord) fonctionne sans modification. Les laboratoires sans code (BI, choix de configuration LLM) utilisent les activités réutilisables.
+
+**Ce que l'étape 4 a confirmé** : aucun nouveau moteur n'a été nécessaire. ML et LLM sont des exercices **Python** (paquets déclarés par contenu, ex. `packages: ["scikit-learn"]`) ; BI est un ensemble d'exercices **SQL** dont le domaine est `bi`. Chaque laboratoire a une implémentation de référence en TypeScript pour sa visualisation (`ui/viz/threshold.ts`, `content/llm/rag-core.ts`, `ui/viz/filterContext.ts`), et un test de contenu vérifie qu'elle donne les mêmes nombres que le moteur réel (scikit-learn, solutions Python, PostgreSQL). Un projet peut porter un parcours hors plateforme (`selfCheck`) : déclaratif, exporté comme tel, jamais compté comme preuve.
 
 ## Carte des compétences
 

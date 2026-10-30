@@ -28,8 +28,24 @@ Elles existent pour que les erreurs fréquentes produisent un résultat **diffé
 - Des commandes à plusieurs lignes et un paiement : joindre `paiements` et `lignes_commande` répète le montant payé une fois par ligne (doublons créés par les jointures).
 - Deux clients portent le même nom (et les cas cachés en ajoutent) : il faut regrouper par identifiant, pas par nom.
 
+### Anomalie non voulue, conservée et documentée
+- 2 retours sont datés **après** la dernière commande (jusqu'au 8 novembre 2026, alors que les commandes s'arrêtent le 22 octobre 2026) : le générateur ajoute un délai au jour de commande sans le borner. Découvert à l'étape 4. Conservé pour ne pas changer les résultats des exercices existants ; le projet BI demande de choisir explicitement la date de rattachement des retours.
+
 Ces invariants sont vérifiés par `tests/content/sql.test.ts` (« jeu de données ») : si le générateur change, les tests indiquent quel exercice perdrait son sens.
 
 ## Python (étape 1)
 
 Petites listes synthétiques écrites directement dans les énoncés et les tests (`src/content/python/boucles.ts`).
+
+## Départ de clients (`churn`, étape 4)
+
+`src/content/datasets/churn.ts` — **synthétique**, aucune personne réelle. 160 abonnés générés de façon déterministe (graine 7) par un modèle logistique **connu** plus du bruit : ancienneté (mois), commandes sur 6 mois, réclamations sur 12 mois ; étiquette = résiliation dans les 3 mois. 120 abonnés d'entraînement (30 départs, 25 %), 40 de test (11 départs, 27,5 %). Les probabilités de test de la régression logistique (scikit-learn 1.8, `max_iter=1000`) sont figées dans `content/ml/evaluation.ts` et recalculées par `tests/content/ml.test.ts`.
+
+## Base documentaire (`documents`, étape 4)
+
+`src/content/datasets/documents.ts` — 8 textes **rédigés pour l'exercice** (politique de retour, livraison, abonnement, garantie, boutique, fidélité, allergènes, paiement) ; aucune politique réelle. Chaque fait n'apparaît que dans un document, pour que la source attendue soit sans ambiguïté. 13 questions de référence, dont 4 sans réponse dans la base (dont une « piège » : le prix d'une machine, proche du document garantie qui ne contient aucun prix). Avec les réglages de la leçon : 5 bonnes sources, 3 abstentions justifiées, 4 silences à tort, 1 réponse sans appui (vérifié par `tests/content/llm.test.ts`).
+
+## BI (étape 4)
+
+Le laboratoire BI réutilise la base PME. Chiffres cités dans la leçon et vérifiés par `tests/content/bi.test.ts` : part du café dans le CA = 24,7 % (toutes périodes), 23,9 % (2026), 18,3 % (clients entreprises en 2026) ; commandes du 1er mai 2025 au 22 octobre 2026 (d'où la comparaison sur « 1er mai – 22 octobre »).
+

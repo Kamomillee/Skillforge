@@ -10,9 +10,9 @@
 | Python | 58 | 57 | 0 | 0 | 0 | 1 | Pipeline d'import, nettoyage et contrôle qualité (Prévu) |
 | SQL | 50 | 39 | 0 | 0 | 4 | 7 | Base de données d'une PME (Disponible) |
 | LLM | 69 | 64 | 0 | 0 | 0 | 5 | Assistant documentaire avec citations (Disponible) |
-| BI | 48 | 48 | 0 | 0 | 0 | 0 | Rapport ventes, marges et retours (Prévu) |
+| BI | 48 | 42 | 0 | 0 | 2 | 4 | Rapport ventes, marges et retours (Disponible) |
 | ML | 55 | 51 | 0 | 0 | 0 | 4 | Prédiction du départ de clients (Disponible) |
-| **Total** | **280** | 259 | 0 | 0 | 4 | 17 | Projet transversal : copilote data PME (Prévu) |
+| **Total** | **280** | 253 | 0 | 0 | 6 | 21 | Projet transversal : copilote data PME (Prévu) |
 
 ## Python pour les données et l'automatisation
 
@@ -220,7 +220,7 @@ Visualisations prévues : Schéma en étoile · Circulation des filtres · Conte
 |---|---|---|---|---|---|---|
 | A. Raisonnement métier | De la demande à la question analytique | Prévu | — | — | — | Rapport ventes, marges et retours |
 | A. Raisonnement métier | Choisir des KPI | Prévu | — | — | — | Rapport ventes, marges et retours |
-| A. Raisonnement métier | Numérateur, dénominateur, période et granularité | Prévu | — | — | — | Rapport ventes, marges et retours |
+| A. Raisonnement métier | Numérateur, dénominateur, période et granularité | Testé | Comparer deux années sur une période réellement comparable et le justifier. | Étape du projet BI corrigée par comparaison de résultats, Décision notée dans le journal | Requêtes SQL comparées à une référence par PostgreSQL (PGlite), y compris sur données modifiées cachées ; le DAX est affiché sans être exécuté. | Rapport ventes, marges et retours (projet BI) : chiffres de référence vérifiés en SQL ; rapport Power BI Desktop en auto-évaluation. |
 | A. Raisonnement métier | Dimensions et mesures | Prévu | — | — | — | Rapport ventes, marges et retours |
 | A. Raisonnement métier | Biais de sélection | Prévu | — | — | — | Rapport ventes, marges et retours |
 | A. Raisonnement métier | Corrélation et causalité | Prévu | — | — | — | Rapport ventes, marges et retours |
@@ -239,18 +239,18 @@ Visualisations prévues : Schéma en étoile · Circulation des filtres · Conte
 | B. Préparation et modélisation | Cardinalités | Prévu | — | — | — | Rapport ventes, marges et retours |
 | B. Préparation et modélisation | Propagation des filtres | Prévu | — | — | — | Rapport ventes, marges et retours |
 | B. Préparation et modélisation | Power Query et langage M | Prévu | — | — | — | Rapport ventes, marges et retours |
-| C. DAX | Mesures et colonnes calculées | Prévu | — | — | — | Rapport ventes, marges et retours |
+| C. DAX | Mesures et colonnes calculées | Disponible | Expliquer qu'une mesure est réévaluée dans chaque cellule d'un visuel, et l'écrire en SQL pour un contexte donné. | Matrice calculée par PostgreSQL, Exercice guidé, KPI mensuels (projet) | Requêtes SQL comparées à une référence par PostgreSQL (PGlite), y compris sur données modifiées cachées ; le DAX est affiché sans être exécuté. | Rapport ventes, marges et retours (projet BI) : chiffres de référence vérifiés en SQL ; rapport Power BI Desktop en auto-évaluation. |
 | C. DAX | SUM, AVERAGE, COUNTROWS, DISTINCTCOUNT | Prévu | — | — | — | Rapport ventes, marges et retours |
-| C. DAX | DIVIDE | Prévu | — | — | — | Rapport ventes, marges et retours |
+| C. DAX | DIVIDE | Disponible | Remplacer une division risquée par l'équivalent de DIVIDE (NULLIF) et interpréter une valeur vide. | Débogage sur données modifiées, Taux de retour (projet) | Requêtes SQL comparées à une référence par PostgreSQL (PGlite), y compris sur données modifiées cachées ; le DAX est affiché sans être exécuté. | Rapport ventes, marges et retours (projet BI) : chiffres de référence vérifiés en SQL ; rapport Power BI Desktop en auto-évaluation. |
 | C. DAX | IF et SWITCH | Prévu | — | — | — | Rapport ventes, marges et retours |
 | C. DAX | Contexte de ligne | Prévu | — | — | — | Rapport ventes, marges et retours |
-| C. DAX | Contexte de filtre | Prévu | — | — | — | Rapport ventes, marges et retours |
+| C. DAX | Contexte de filtre | Disponible | Lister les filtres d'une cellule (slicer, ligne, colonne, définition de la mesure) et prédire leur effet. | Association filtres → sources, Construction pas à pas du contexte, Prédiction (ligne Total), Explication avec ses propres mots | Requêtes SQL comparées à une référence par PostgreSQL (PGlite), y compris sur données modifiées cachées ; le DAX est affiché sans être exécuté. | Rapport ventes, marges et retours (projet BI) : chiffres de référence vérifiés en SQL ; rapport Power BI Desktop en auto-évaluation. |
 | C. DAX | CALCULATE | Prévu | — | — | — | Rapport ventes, marges et retours |
 | C. DAX | FILTER | Prévu | — | — | — | Rapport ventes, marges et retours |
-| C. DAX | ALL et REMOVEFILTERS | Prévu | — | — | — | Rapport ventes, marges et retours |
+| C. DAX | ALL et REMOVEFILTERS | Disponible | Calculer une part en retirant un seul filtre du dénominateur (ALL), en SQL avec une fonction de fenêtre. | Matrice « part du CA », Démonstration exécutable, Exercice autonome, Test de validation | Requêtes SQL comparées à une référence par PostgreSQL (PGlite), y compris sur données modifiées cachées ; le DAX est affiché sans être exécuté. | Rapport ventes, marges et retours (projet BI) : chiffres de référence vérifiés en SQL ; rapport Power BI Desktop en auto-évaluation. |
 | C. DAX | Itérateurs (SUMX) | Prévu | — | — | — | Rapport ventes, marges et retours |
 | C. DAX | Transition de contexte | Prévu | — | — | — | Rapport ventes, marges et retours |
-| C. DAX | Comparaisons temporelles | Prévu | — | — | — | Rapport ventes, marges et retours |
+| C. DAX | Comparaisons temporelles | Testé | Calculer une évolution d'une année sur l'autre à périmètre de dates identique. | Étape du projet BI corrigée par comparaison de résultats | Requêtes SQL comparées à une référence par PostgreSQL (PGlite), y compris sur données modifiées cachées ; le DAX est affiché sans être exécuté. | Rapport ventes, marges et retours (projet BI) : chiffres de référence vérifiés en SQL ; rapport Power BI Desktop en auto-évaluation. |
 | C. DAX | Cumuls | Prévu | — | — | — | Rapport ventes, marges et retours |
 | C. DAX | Conditions des fonctions de temps | Prévu | — | — | — | Rapport ventes, marges et retours |
 | D. Visualisation et publication | Choisir le bon graphique | Prévu | — | — | — | Rapport ventes, marges et retours |

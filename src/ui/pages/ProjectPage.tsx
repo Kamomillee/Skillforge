@@ -84,6 +84,39 @@ function JournalField({ projectId, stepId, label, rows = 4 }: { projectId: strin
   );
 }
 
+export const selfCheckKey = (projectId: string) => `selfcheck:${projectId}`;
+type SelfCheckState = { checked: string[]; at: string };
+
+/** Auto-évaluation d'un parcours hors de SkillForge : déclarative, signalée comme telle, jamais une preuve de maîtrise. */
+function SelfCheck({ project }: { project: Project }) {
+  const { store } = useApp();
+  const sc = project.selfCheck!;
+  const [state, setState] = useState<SelfCheckState | null>(null);
+  useEffect(() => {
+    store.get<SelfCheckState>(selfCheckKey(project.id)).then((v) => setState(v ?? { checked: [], at: "" }));
+  }, [store, project.id]);
+  async function toggle(id: string) {
+    if (!state) return;
+    const checked = state.checked.includes(id) ? state.checked.filter((x) => x !== id) : [...state.checked, id];
+    const next = { checked, at: new Date().toISOString() };
+    setState(next);
+    await store.set(selfCheckKey(project.id), next);
+  }
+  return (
+    <fieldset className="selfcheck" data-testid="selfcheck">
+      <legend>
+        {sc.title} — auto-évaluation ({state?.checked.length ?? 0}/{sc.items.length})
+      </legend>
+      <p className="small muted">Ces cases sont déclaratives : SkillForge ne peut pas ouvrir ton fichier Power BI. Elles ne comptent pas dans ta maîtrise et sont exportées comme « auto-évaluation ».</p>
+      {sc.items.map((it) => (
+        <label key={it.id} className="small selfcheck-item">
+          <input type="checkbox" checked={!!state?.checked.includes(it.id)} disabled={!state} onChange={() => toggle(it.id)} /> {it.label}
+        </label>
+      ))}
+    </fieldset>
+  );
+}
+
 function mdTable(r: ResultSet, max = 20) {
   const esc = (v: unknown) => (v === null ? "NULL" : String(v).replace(/\|/g, "\\|"));
   const lines = [`| ${r.columns.join(" | ")} |`, `| ${r.columns.map(() => "---").join(" | ")} |`, ...r.rows.slice(0, max).map((row) => `| ${row.map(esc).join(" | ")} |`)];
@@ -137,6 +170,10 @@ export function ProjectPage({ route }: { route: Route }) {
           if (ok) parts.push(`Vérifications : ${ok.passedCount}/${ok.total} (dont ${ok.hiddenPassed}/${ok.hiddenTotal} cachées).`, "");
         }
         parts.push(`**Décision — ${s.decisionPrompt}**`, "", journal || "_(pas encore rédigée)_", "");
+      }
+      if (p.selfCheck) {
+        const sc = await store.get<SelfCheckState>(selfCheckKey(p.id));
+        parts.push(`## ${p.selfCheck.title} (auto-évaluation, non vérifiée par SkillForge)`, "", ...p.selfCheck.items.map((it) => `- [${sc?.checked.includes(it.id) ? "x" : " "}] ${it.label}`), "");
       }
       const bilan = (await store.get<{ text: string }>(journalKey(p.id, "bilan")))?.text?.trim();
       parts.push("## Bilan et limites", "", bilan || "_(pas encore rédigé)_", "");
@@ -254,6 +291,7 @@ export function ProjectPage({ route }: { route: Route }) {
                   </li>
                 ))}
               </ul>
+              {project.selfCheck && <SelfCheck project={project} />}
               <JournalField
                 projectId={project.id}
                 stepId="bilan"
@@ -287,7 +325,14 @@ export function ProjectPage({ route }: { route: Route }) {
               </ul>
               <h2>Les données</h2>
               {project.data && <Md text={project.data} />}
-              {project.domain === "sql" && (
+              {project.selfCheck && (
+                <>
+                  <h2>{project.selfCheck.title}</h2>
+                  <Md text={project.selfCheck.intro} />
+                  <p className="small muted">Tu cocheras ces points dans « Bilan et export » (auto-évaluation).</p>
+                </>
+              )}
+              {(project.domain === "sql" || project.domain === "bi") && (
                 <>
                   <p>Relations entre tables (lues dans les clés étrangères de la base) :</p>
                   <Relations />

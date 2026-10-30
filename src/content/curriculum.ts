@@ -375,6 +375,98 @@ const implemented: Record<string, Partial<Notion>> = {
     ],
     "project": "Assistant documentaire avec citations (projet LLM) : index, recherche, tableau d'évaluation sur 13 questions de référence."
 },
+  "bi.c.mesures-et-colonnes-calculees": {
+    "status": "disponible",
+    "objective": "Expliquer qu'une mesure est réévaluée dans chaque cellule d'un visuel, et l'écrire en SQL pour un contexte donné.",
+    "activities": [
+        "Matrice calculée par PostgreSQL",
+        "Exercice guidé",
+        "KPI mensuels (projet)"
+    ],
+    "prerequisites": [],
+    "lessonIds": [
+        "bi-mesures-contexte"
+    ],
+    "evaluation": "Requêtes SQL comparées à une référence par PostgreSQL (PGlite), y compris sur données modifiées cachées ; le DAX est affiché sans être exécuté.",
+    "project": "Rapport ventes, marges et retours (projet BI) : chiffres de référence vérifiés en SQL ; rapport Power BI Desktop en auto-évaluation."
+},
+  "bi.c.contexte-de-filtre": {
+    "status": "disponible",
+    "objective": "Lister les filtres d'une cellule (slicer, ligne, colonne, définition de la mesure) et prédire leur effet.",
+    "activities": [
+        "Association filtres → sources",
+        "Construction pas à pas du contexte",
+        "Prédiction (ligne Total)",
+        "Explication avec ses propres mots"
+    ],
+    "prerequisites": [
+        "bi.c.mesures-et-colonnes-calculees"
+    ],
+    "lessonIds": [
+        "bi-mesures-contexte"
+    ],
+    "evaluation": "Requêtes SQL comparées à une référence par PostgreSQL (PGlite), y compris sur données modifiées cachées ; le DAX est affiché sans être exécuté.",
+    "project": "Rapport ventes, marges et retours (projet BI) : chiffres de référence vérifiés en SQL ; rapport Power BI Desktop en auto-évaluation."
+},
+  "bi.c.divide": {
+    "status": "disponible",
+    "objective": "Remplacer une division risquée par l'équivalent de DIVIDE (NULLIF) et interpréter une valeur vide.",
+    "activities": [
+        "Débogage sur données modifiées",
+        "Taux de retour (projet)"
+    ],
+    "prerequisites": [
+        "bi.c.mesures-et-colonnes-calculees"
+    ],
+    "lessonIds": [
+        "bi-mesures-contexte"
+    ],
+    "evaluation": "Requêtes SQL comparées à une référence par PostgreSQL (PGlite), y compris sur données modifiées cachées ; le DAX est affiché sans être exécuté.",
+    "project": "Rapport ventes, marges et retours (projet BI) : chiffres de référence vérifiés en SQL ; rapport Power BI Desktop en auto-évaluation."
+},
+  "bi.c.all-et-removefilters": {
+    "status": "disponible",
+    "objective": "Calculer une part en retirant un seul filtre du dénominateur (ALL), en SQL avec une fonction de fenêtre.",
+    "activities": [
+        "Matrice « part du CA »",
+        "Démonstration exécutable",
+        "Exercice autonome",
+        "Test de validation"
+    ],
+    "prerequisites": [
+        "bi.c.contexte-de-filtre"
+    ],
+    "lessonIds": [
+        "bi-mesures-contexte"
+    ],
+    "evaluation": "Requêtes SQL comparées à une référence par PostgreSQL (PGlite), y compris sur données modifiées cachées ; le DAX est affiché sans être exécuté.",
+    "project": "Rapport ventes, marges et retours (projet BI) : chiffres de référence vérifiés en SQL ; rapport Power BI Desktop en auto-évaluation."
+},
+  "bi.a.numerateur-denominateur-periode-et-granularite": {
+    "status": "teste",
+    "objective": "Comparer deux années sur une période réellement comparable et le justifier.",
+    "activities": [
+        "Étape du projet BI corrigée par comparaison de résultats",
+        "Décision notée dans le journal"
+    ],
+    "prerequisites": [
+        "bi.c.mesures-et-colonnes-calculees"
+    ],
+    "evaluation": "Requêtes SQL comparées à une référence par PostgreSQL (PGlite), y compris sur données modifiées cachées ; le DAX est affiché sans être exécuté.",
+    "project": "Rapport ventes, marges et retours (projet BI) : chiffres de référence vérifiés en SQL ; rapport Power BI Desktop en auto-évaluation."
+},
+  "bi.c.comparaisons-temporelles": {
+    "status": "teste",
+    "objective": "Calculer une évolution d'une année sur l'autre à périmètre de dates identique.",
+    "activities": [
+        "Étape du projet BI corrigée par comparaison de résultats"
+    ],
+    "prerequisites": [
+        "bi.c.divide"
+    ],
+    "evaluation": "Requêtes SQL comparées à une référence par PostgreSQL (PGlite), y compris sur données modifiées cachées ; le DAX est affiché sans être exécuté.",
+    "project": "Rapport ventes, marges et retours (projet BI) : chiffres de référence vérifiés en SQL ; rapport Power BI Desktop en auto-évaluation."
+},
 };
 
 const domains: Domain[] = [
@@ -656,8 +748,8 @@ const domains: Domain[] = [
       "Transformer une demande en question analytique, modéliser en étoile, raisonner en DAX et communiquer. Laboratoire natif + parcours Power BI Desktop (pas d'exécution de Power BI dans le navigateur).",
     project: {
       title: "Rapport ventes, marges et retours",
-      summary: "Page exécutive, page d'analyse et recommandations, réalisé dans Power BI Desktop avec critères de validation.",
-      status: "prevu",
+      summary: "Chiffres de référence vérifiés en SQL (KPI mensuels, retours, période comparable), puis rapport dans Power BI Desktop en auto-évaluation : le fichier Power BI n'est pas vérifié par SkillForge.",
+      status: "disponible",
     },
     plannedVisualizations: [
       "Schéma en étoile",

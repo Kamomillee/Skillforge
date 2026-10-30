@@ -33,3 +33,18 @@ test("mobile : carte des compétences et activités sans débordement horizontal
     expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), url).toBe(false);
   }
 });
+
+test("mobile : visualisations ML, RAG et BI sans débordement horizontal", async ({ page }) => {
+  for (const [url, id] of [
+    ["/#/lecon/ml-evaluer-classifieur/schema", "threshold-viz"],
+    ["/#/lecon/llm-rag-citations/schema", "rag-viz"],
+    ["/#/lecon/bi-mesures-contexte/schema", "filter-context-viz"],
+  ]) {
+    await page.goto(url);
+    await page.getByTestId(id).waitFor();
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), url).toBe(false);
+  }
+  await page.getByRole("button", { name: /^Café, particulier : \d/ }).waitFor({ timeout: 60_000 });
+  await page.getByTestId("filter-context-viz").screenshot({ path: "test-results/mobile-bi.png" });
+});

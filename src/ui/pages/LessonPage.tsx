@@ -251,7 +251,7 @@ export function LessonPage({ route }: { route: Route }) {
       <aside className={`atelier${fullscreen ? " fullscreen" : ""}`} aria-label="Atelier pratique">
         {exercise ? (
           <Workbench key={exercise.id} exercise={exercise} lesson={lesson} fullscreen={fullscreen} onFullscreen={setFullscreen} />
-        ) : lesson.domain === "sql" ? (
+        ) : lesson.domain === "sql" || lesson.domain === "bi" ? (
           <SqlSandbox />
         ) : (
           <Sandbox />

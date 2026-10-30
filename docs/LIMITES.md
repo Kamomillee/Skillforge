@@ -1,15 +1,20 @@
-# Limites connues (étapes 1 et 2)
+# Limites connues (étapes 1 à 4)
 
 ## Contenu
-- **8 notions sont disponibles** sur 280 (1 Python, 7 SQL), 4 autres sont « testées » via le projet PME. La matrice de couverture l'indique honnêtement.
-- Un seul projet est jouable (SQL, base de données d'une PME, 5 questions métier) ; sa partie conception de schéma est prévue. Le projet transversal, le mode entretien et le tuteur IA ne sont pas encore implémentés ; l'interface l'indique là où ils apparaissent.
+- **21 notions sont disponibles** sur 280 (Python 1, SQL 7, LLM 5, BI 4, ML 4), 6 autres sont « testées » via les projets. La matrice de couverture l'indique honnêtement.
+- Quatre projets sont jouables (SQL, ML, LLM, BI). La partie conception du projet PME est prévue ; le projet Python, le projet transversal, le mode entretien et le tuteur IA ne sont pas encore implémentés ; l'interface l'indique là où ils apparaissent.
+
+## Laboratoires de l'étape 4
+- **LLM** : aucun modèle de langage n'est appelé. La « réponse » est produite par un **modèle simulé** (extraction de la phrase la plus pertinente), signalé partout où il apparaît. Découpage, recherche, contexte, citations, abstention et évaluation sont réels. La recherche est **lexicale** (pas d'embeddings) : elle rate les synonymes et la conjugaison, ce que la leçon montre et mesure (4 silences à tort sur 13 questions).
+- **BI** : Power BI ne s'exécute pas dans un navigateur. Les mesures sont calculées en SQL (PostgreSQL) et le DAX est **affiché sans être exécuté** ; l'équivalence est expliquée (DIVIDE ↔ NULLIF, ALL ↔ fonction de fenêtre) mais n'est pas prouvée par un moteur DAX. Le rapport Power BI du projet est en **auto-évaluation** : SkillForge ne lit pas le fichier .pbix et ne compte pas ces cases dans la maîtrise.
+- **ML** : scikit-learn 1.8 tourne dans Pyodide (~30 Mo au premier usage). Les probabilités du projet sont recalculées par les tests ; une autre version de scikit-learn pourrait donner des écarts au-delà de la tolérance (0,002). Le calcul de coût suppose que l'offre retient chaque abonné détecté : la leçon l'écrit explicitement.
 - Le mini-diagnostic de l'onboarding ne couvre que Python.
 
 ## Exécution Python (navigateur)
 - **Mémoire** : pas de limite fine ; seule celle du navigateur s'applique (WebAssembly 32 bits, 4 Go max). Un programme qui alloue énormément peut faire planter le worker ; il est alors recréé.
 - **Réseau** : `pyodide.http` est retiré, mais un code déterminé peut encore appeler `fetch` via le module `js`. Aucun secret n'est présent dans le navigateur, le risque est donc limité à l'étudiant lui-même. À l'étape 7, une politique CSP `connect-src 'self'` sera ajoutée aux en-têtes d'hébergement.
 - **Interruption** : douce seulement avec COOP/COEP ; sinon redémarrage du moteur (état Python perdu, ≈ 2 s).
-- **Premier chargement** : ~10 Mo pour le noyau Python ; pandas/scikit-learn (~30 Mo) ne seront chargés que par les exercices qui en ont besoin (aucun à cette étape).
+- **Premier chargement** : ~10 Mo pour le noyau Python ; scikit-learn et ses dépendances (~30 Mo) ne sont chargés que par les contenus qui les déclarent (démonstration ML, étape 2 du projet churn). La limite de temps est suspendue pendant ce chargement.
 
 ## Exécution SQL (navigateur)
 - **Taille** : ~17 Mo (wasm + données) téléchargés à la première ouverture d'un contenu SQL ; moteur prêt en ~3 s mesurées sur Chromium headless local, davantage sur un ordinateur lent ou un réseau mobile.

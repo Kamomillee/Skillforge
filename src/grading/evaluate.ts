@@ -149,6 +149,8 @@ export function buildSqlReport(ex: SqlExercise, outcomes: CheckOutcome[], durati
     if (!o.got.ok) {
       base.sqlError = o.got.error;
       base.feedback = "La requête a produit une erreur sur ce cas.";
+      // Division par zéro (SQLSTATE 22012) : l'erreur suffit à identifier la cause.
+      if (o.got.error.code === "22012") base.misconception = "division-zero";
       return base;
     }
     const diff = compareResults(o.expected.result, o.got.result, { columnMode: ex.columnMode, orderBy: ex.orderBy, tolerance: ex.tolerance });

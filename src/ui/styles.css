@@ -1766,3 +1766,95 @@ table.result.eval-table td {
   align-self: stretch;
   grid-template-rows: 1fr auto;
 }
+
+/* ---------- Contexte de filtre (BI) ---------- */
+.fc-slicer {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px 8px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0;
+}
+.fc-matrix td.fc-cell {
+  padding: 0;
+}
+.fc-btn {
+  all: unset;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  padding: 4px 10px;
+  text-align: right;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+.fc-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+.fc-cell.in .fc-btn {
+  border-color: var(--line-strong);
+  border-style: dashed;
+}
+.fc-cell.sel .fc-btn {
+  border: 2px solid var(--accent);
+  background: var(--accent-soft);
+  font-weight: 700;
+}
+.fc-head-on {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--accent);
+  color: var(--ink);
+  font-weight: 800;
+}
+.fc-filters {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.fc-filters li {
+  border: 1px dashed var(--line-strong);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.85rem;
+  color: var(--ink-3);
+}
+.fc-filters li.on {
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+.fc-filters li.on::before {
+  content: "✓ ";
+}
+.selfcheck {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px 12px;
+  margin: 16px 0;
+  display: grid;
+  gap: 6px;
+}
+.selfcheck legend {
+  font-weight: 650;
+}
+.selfcheck-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+/* Pas de ligatures dans le code : « >= » doit s'afficher comme on le tape. */
+code,
+pre,
+kbd,
+.cm-editor,
+.codeblock,
+table.result {
+  font-variant-ligatures: none;
+}
