@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { EditorView, basicSetup } from "codemirror";
 import { python } from "@codemirror/lang-python";
+import { sql, PostgreSQL } from "@codemirror/lang-sql";
 import { Annotation, Compartment, EditorState } from "@codemirror/state";
 import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
@@ -31,7 +32,7 @@ const lightTheme = EditorView.theme({
 });
 
 /**
- * Éditeur CodeMirror 6 : coloration Python, numéros de ligne, indentation de 4 espaces.
+ * Éditeur CodeMirror 6 : coloration Python (indentation 4) ou SQL PostgreSQL (indentation 2), numéros de ligne.
  * Tab indente ; Échap puis Tab permet de quitter l'éditeur au clavier.
  */
 export function CodeEditor({
@@ -41,7 +42,9 @@ export function CodeEditor({
   onSubmit,
   label,
   handleRef,
+  language = "python",
 }: {
+  language?: "python" | "sql";
   value: string;
   onChange: (v: string) => void;
   onRun?: () => void;
@@ -67,9 +70,7 @@ export function CodeEditor({
             indentWithTab,
           ]),
           basicSetup,
-          python(),
-          indentUnit.of("    "),
-          EditorState.tabSize.of(4),
+          ...(language === "sql" ? [sql({ dialect: PostgreSQL, upperCaseKeywords: true }), indentUnit.of("  "), EditorState.tabSize.of(2)] : [python(), indentUnit.of("    "), EditorState.tabSize.of(4)]),
           theme.of(isDark() ? oneDark : lightTheme),
           EditorView.contentAttributes.of({ "aria-label": label }),
           EditorView.updateListener.of((u) => {

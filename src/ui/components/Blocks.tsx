@@ -4,6 +4,11 @@ import { useApp } from "../app-context";
 import { Md } from "../Md";
 import { LoopTracer } from "../viz/LoopTracer";
 import { explainError, type PyErrorInfo } from "../../grading/errors";
+import type { QueryOutcome } from "../../runtime/sql/engine";
+import { ResultTable, SqlErrorCard } from "./SqlParts";
+import { SqlSteps } from "../viz/SqlSteps";
+import { JoinViz } from "../viz/JoinViz";
+import { projectById } from "../../content";
 
 type PredictionBlock = Extract<LessonBlock, { type: "prediction" }>;
 type ExplainBlockT = Extract<LessonBlock, { type: "explain" }>;
@@ -135,6 +140,43 @@ export function RunnableCode({ code }: { code: string }) {
   );
 }
 
+/** Exemple SQL exécutable sur la base de formation (lecture seule, transaction annulée). */
+export function RunnableSql({ code }: { code: string }) {
+  const { sqlRunner } = useApp();
+  const [out, setOut] = useState<{ status: string; outcome?: QueryOutcome } | null>(null);
+  async function run() {
+    setOut({ status: "running" });
+    const r = await sqlRunner.query(code, 8000, 100);
+    setOut({ status: r.status, outcome: r.outcome });
+  }
+  return (
+    <div style={{ margin: "12px 0" }}>
+      <pre className="codeblock" style={{ marginBottom: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }}>
+        {code}
+      </pre>
+      <div className="row" style={{ border: "1px solid var(--line)", borderTop: 0, padding: "6px 10px", borderRadius: "0 0 6px 6px", background: "var(--surface-2)" }}>
+        <button className="btn sm primary" onClick={run} disabled={out?.status === "running"}>
+          ▶ Exécuter la requête
+        </button>
+        <span className="small muted">Exécution réelle par PostgreSQL dans ton navigateur.</span>
+      </div>
+      {out && (
+        <div style={{ marginTop: 8 }} aria-live="polite" data-testid="demo-output">
+          {out.status === "running" ? (
+            <p className="small muted">Exécution…</p>
+          ) : out.outcome?.ok ? (
+            <ResultTable result={out.outcome.result} />
+          ) : out.outcome ? (
+            <SqlErrorCard err={out.outcome.error} sql={code} />
+          ) : (
+            <p className="small">Requête interrompue ({out.status}).</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function LessonBlockView({ block, lesson, onOpenExercise }: { block: LessonBlock; lesson: Lesson; onOpenExercise: (id: string) => void }) {
   switch (block.type) {
     case "text":
@@ -148,7 +190,11 @@ export function LessonBlockView({ block, lesson, onOpenExercise }: { block: Less
       );
     case "code":
       return block.runnable ? (
-        <RunnableCode code={block.code} />
+        block.language === "sql" ? (
+          <RunnableSql code={block.code} />
+        ) : (
+          <RunnableCode code={block.code} />
+        )
       ) : (
         <>
           <pre className="codeblock">{block.code}</pre>
@@ -157,20 +203,31 @@ export function LessonBlockView({ block, lesson, onOpenExercise }: { block: Less
       );
     case "trace":
       return <LoopTracer title={block.title} code={block.code} steps={block.steps} />;
+    case "sql-steps":
+      return <SqlSteps title={block.title} stages={block.stages} />;
+    case "join-viz":
+      return <JoinViz title={block.title} />;
     case "prediction":
       return <Prediction block={block} lesson={lesson} />;
     case "explain":
       return <ExplainBlock block={block} lesson={lesson} />;
     case "exercise":
       return <ExerciseStub id={block.exerciseId} onOpen={onOpenExercise} />;
-    case "project":
+    case "project": {
+      const project = block.projectId ? projectById.get(block.projectId) : undefined;
       return (
-        <div className="panel" style={{ borderStyle: "dashed" }}>
-          <div className="eyebrow">Projet · prévu</div>
+        <div className="panel" style={{ borderStyle: project ? "solid" : "dashed" }}>
+          <div className="eyebrow">{project ? "Projet · disponible" : "Projet · prévu"}</div>
           <h3>{block.title}</h3>
           <Md text={block.md} glossary={lesson.glossary} />
+          {project && (
+            <a className="btn sm" href={`#/projet/${project.id}`}>
+              Ouvrir le projet
+            </a>
+          )}
         </div>
       );
+    }
   }
 }
 

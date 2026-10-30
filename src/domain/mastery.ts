@@ -51,7 +51,7 @@ export function estimateMastery(
     const title = exs.find((e) => e.id === id)?.title ?? id;
     const withHint = a.hintLevel >= 3 ? " (avec aide ciblée)" : "";
     evidence.push({
-      kind: kind === "autonomous" ? "exercice-autonome" : kind === "debug" ? "debogage" : kind === "validation" ? "validation" : "exercice-guide",
+      kind: kind === "autonomous" || kind === "project" ? "exercice-autonome" : kind === "debug" ? "debogage" : kind === "validation" ? "validation" : "exercice-guide",
       label: `« ${title} » réussi : ${a.passedCount}/${a.total} tests, dont ${a.hiddenPassed}/${a.hiddenTotal} cachés${withHint}`,
       at: a.at,
       verified: true,
@@ -66,10 +66,12 @@ export function estimateMastery(
   for (const h of ctx.review?.history ?? []) if (h.ok) evidence.push({ kind: "revision", label: "Révision réussie après un délai", at: h.at, verified: true });
 
   const reasons: string[] = [];
-  const autonomous = [...firstClean.values()].filter((a) => {
-    const k = kindOf.get(a.exerciseId);
-    return (k === "autonomous" || k === "validation") && a.hintLevel < 3;
-  });
+  // Preuve autonome : exercice autonome, test de validation ou étape de projet. Si la notion n'a aucun de ces
+  // exercices (par exemple une notion travaillée uniquement par un débogage), le débogage réussi en tient lieu.
+  const autonomousKinds = new Set<string>(["autonomous", "validation", "project"]);
+  const hasAutonomous = exs.some((e) => autonomousKinds.has(e.kind));
+  if (!hasAutonomous) autonomousKinds.add("debug");
+  const autonomous = [...firstClean.values()].filter((a) => autonomousKinds.has(kindOf.get(a.exerciseId) ?? "") && a.hintLevel < 3);
   const debugOk = [...firstClean.keys()].some((id) => kindOf.get(id) === "debug");
   const reviewOk = (ctx.review?.history ?? []).some((h) => h.ok);
 
@@ -84,12 +86,21 @@ export function estimateMastery(
   }
   if (autonomous.length) {
     level = 3;
-    reasons.push("Exercice autonome ou test de validation réussi (tests cachés compris), sans solution affichée ni aide ciblée.");
+    reasons.push(
+      hasAutonomous
+        ? "Exercice autonome, test de validation ou étape de projet réussi (tests cachés compris), sans solution affichée ni aide ciblée."
+        : "Débogage réussi (seul exercice de cette notion), cas cachés compris, sans solution affichée ni aide ciblée.",
+    );
   } else if (attempts.length) {
-    reasons.push("Pour atteindre « Démontré » : réussir l'exercice autonome sans afficher la solution ni l'aide ciblée.");
+    reasons.push(`Pour atteindre « Démontré » : réussir ${hasAutonomous ? "l'exercice autonome" : "le débogage"} sans afficher la solution ni l'aide ciblée.`);
   }
   if (level === 3) {
-    if (debugOk && reviewOk) {
+    if (!hasAutonomous && reviewOk) {
+      level = 4;
+      reasons.push("Révision réussie après un délai.");
+    } else if (!hasAutonomous) {
+      reasons.push("Pour atteindre « Consolidé » : réussir une révision espacée.");
+    } else if (debugOk && reviewOk) {
       level = 4;
       reasons.push("Débogage réussi et révision réussie après un délai.");
     } else {

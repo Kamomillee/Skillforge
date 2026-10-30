@@ -2,7 +2,7 @@ import { loadPyodide, type PyodideInterface } from "pyodide";
 import { resolve } from "node:path";
 import { HARNESS_PY } from "../../src/grading/harness";
 import { buildReport, gradingSpec, type RawGradeResult } from "../../src/grading/evaluate";
-import type { Exercise } from "../../src/content/types";
+import type { PythonExercise } from "../../src/content/types";
 
 let py: Promise<PyodideInterface> | null = null;
 
@@ -16,7 +16,7 @@ export function getPyodide() {
   return py;
 }
 
-export async function grade(ex: Exercise, code: string) {
+export async function grade(ex: PythonExercise, code: string) {
   const p = await getPyodide();
   const fn = p.globals.get("sf_grade");
   const raw = JSON.parse(fn(code, gradingSpec(ex))) as RawGradeResult;

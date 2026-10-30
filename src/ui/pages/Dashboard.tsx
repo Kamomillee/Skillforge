@@ -1,5 +1,6 @@
-import { useMemo } from "react";
-import { allNotions, curriculum, exercises, lessonById, lessons, sectionForExercise } from "../../content";
+import { useEffect, useMemo, useState } from "react";
+import { allNotions, curriculum, exercises, lessonById, lessons, projects, sectionForExercise } from "../../content";
+import { projectHref, type ProjectResume } from "./ProjectPage";
 import { estimateMastery, masteryLabel } from "../../domain/mastery";
 import { frequentErrors, lessonHref, recommendNext } from "../../domain/recommend";
 import { isDue } from "../../domain/reviews";
@@ -14,7 +15,9 @@ function weekStart(d = new Date()) {
 }
 
 export function Dashboard() {
-  const { data } = useApp();
+  const { data, store } = useApp();
+  const [projResume, setProjResume] = useState<ProjectResume | undefined>();
+  useEffect(() => void store.get<ProjectResume>("resume:project").then(setProjResume), [store]);
   const rec = useMemo(
     () => recommendNext({ path: data.path, lessons, exercises, attempts: data.attempts, drafts: data.drafts, reviews: data.reviews, resume: data.resume }),
     [data],
@@ -117,10 +120,28 @@ export function Dashboard() {
             <p className="small muted">Aucune preuve pour l'instant. Une preuve = un exercice réussi avec les tests, pas une leçon lue.</p>
           )}
 
-          <h2 style={{ marginTop: 28 }}>Projets en cours</h2>
-          <p className="small muted">
-            Aucun projet ouvert. Le premier projet (pipeline de données Python) s'ouvrira avec le module correspondant ; tes exercices réussis y seront réutilisables.
-          </p>
+          <h2 style={{ marginTop: 28 }}>Projets</h2>
+          <ul className="list-plain" data-testid="dash-projects">
+            {projects.map((p) => {
+              const done = p.steps.filter((st) => data.attempts.some((a) => a.exerciseId === st.exerciseId && a.status === "passed")).length;
+              const started = done > 0 || data.attempts.some((a) => p.steps.some((st) => st.exerciseId === a.exerciseId)) || projResume?.projectId === p.id;
+              const href = projResume?.projectId === p.id ? projectHref(p.id, projResume.stepId) : projectHref(p.id);
+              return (
+                <li key={p.id} className="row" style={{ justifyContent: "space-between" }}>
+                  <span>
+                    <strong>{p.title}</strong>{" "}
+                    <span className="small muted">
+                      · {started ? `en cours, ${done}/${p.steps.length} requêtes vérifiées` : "pas encore commencé"}
+                    </span>
+                  </span>
+                  <a className="btn sm" href={href}>
+                    {started ? "Reprendre" : "Découvrir"}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="small muted">Le projet Python (pipeline de données) s'ouvrira avec le module correspondant.</p>
         </section>
 
         <aside className="stack" style={{ alignContent: "start", gap: 28 }}>

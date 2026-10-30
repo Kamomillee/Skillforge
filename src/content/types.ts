@@ -75,10 +75,13 @@ export const hintSchema = z.object({
   text: z.string(),
 });
 
-export const exerciseSchema = z.object({
+export const exerciseKinds = ["guided", "autonomous", "debug", "validation", "project"] as const;
+
+export const pythonExerciseSchema = z.object({
   id: z.string(),
   version: z.number().int().positive(),
-  kind: z.enum(["guided", "autonomous", "debug", "validation"]),
+  language: z.literal("python").default("python"),
+  kind: z.enum(exerciseKinds),
   title: z.string(),
   prompt: z.string(),
   functionName: z.string(),
@@ -91,7 +94,42 @@ export const exerciseSchema = z.object({
   packages: z.array(z.string()).default([]),
   timeLimitMs: z.number().int().positive().default(5000),
 });
-export type Exercise = z.infer<typeof exerciseSchema>;
+export type PythonExercise = z.infer<typeof pythonExerciseSchema>;
+
+export const sqlCheckSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  hidden: z.boolean(),
+  /** SQL exécuté avant la vérification, dans la même transaction annulée (données modifiées). */
+  setup: z.string().optional(),
+  misconception: z.string().optional(),
+});
+export type SqlCheck = z.infer<typeof sqlCheckSchema>;
+
+export const sqlExerciseSchema = z.object({
+  id: z.string(),
+  version: z.number().int().positive(),
+  language: z.literal("sql"),
+  kind: z.enum(exerciseKinds),
+  title: z.string(),
+  prompt: z.string(),
+  dataset: z.literal("pme"),
+  starterCode: z.string(),
+  referenceSolution: z.string(),
+  /** L'ordre des lignes n'est vérifié que si l'énoncé l'exige ; il porte alors sur ces colonnes. */
+  orderBy: z.array(z.string()).optional(),
+  /** "names" : les noms (alias) de colonnes comptent ; "position" : seul l'ordre des colonnes compte. */
+  columnMode: z.enum(["names", "position"]).default("names"),
+  tolerance: z.number().default(0.005),
+  checks: z.array(sqlCheckSchema).min(1),
+  hints: z.array(hintSchema).length(4),
+  explanation: z.string(),
+  conceptIds: z.array(z.string()).min(1),
+  timeLimitMs: z.number().int().positive().default(8000),
+});
+export type SqlExercise = z.infer<typeof sqlExerciseSchema>;
+
+export type Exercise = PythonExercise | SqlExercise;
 
 export const misconceptionLabels: Record<string, string> = {
   "liste-vide": "Oublier le cas de la liste vide",
@@ -103,6 +141,17 @@ export const misconceptionLabels: Record<string, string> = {
   "mutation-argument": "Modifier la liste reçue en argument",
   "condition-inversee": "Inverser ou élargir la condition (>, >=, <)",
   "valeur-retour": "Afficher avec print au lieu de retourner avec return",
+  "null-egalite": "Comparer à NULL avec = au lieu de IS NULL",
+  "where-having": "Confondre WHERE et HAVING",
+  "jointure-doublons": "Doublons créés par une jointure (montants comptés plusieurs fois)",
+  "inner-au-lieu-de-left": "INNER JOIN qui fait disparaître les lignes sans correspondance",
+  "count-etoile-left": "COUNT(*) au lieu de COUNT(colonne) après un LEFT JOIN",
+  "statut-annule": "Inclure les commandes annulées",
+  "ordre-tri": "Tri absent ou dans le mauvais sens",
+  "colonnes": "Colonnes ou alias différents de ceux demandés",
+  "valeur-codee-en-dur": "Valeur codée en dur au lieu d'être calculée",
+  "group-by-granularite": "Mauvaise granularité du GROUP BY",
+  "division-entiere": "Division entière qui tronque un taux",
 };
 
 // ---------- Leçons ----------
@@ -119,7 +168,7 @@ export interface TraceStep {
 export type LessonBlock =
   | { type: "text"; md: string }
   | { type: "callout"; tone: "info" | "warning" | "success"; title: string; md: string }
-  | { type: "code"; code: string; runnable?: boolean; caption?: string }
+  | { type: "code"; code: string; language?: "python" | "sql"; runnable?: boolean; caption?: string }
   | { type: "trace"; title: string; code: string; steps: TraceStep[] }
   | {
       type: "prediction";
@@ -131,8 +180,10 @@ export type LessonBlock =
       explanation: string;
     }
   | { type: "exercise"; exerciseId: string }
+  | { type: "sql-steps"; title: string; stages: { clause: string; label: string; sql: string; note: string }[] }
+  | { type: "join-viz"; title: string }
   | { type: "explain"; id: string; prompt: string; criteria: string[] }
-  | { type: "project"; title: string; md: string };
+  | { type: "project"; title: string; md: string; projectId?: string };
 
 /** Les 10 temps de la boucle pédagogique. */
 export const loopStages = [
@@ -191,4 +242,29 @@ export interface Concept {
   title: string;
   domain: DomainId;
   definition: string;
+}
+
+export type PythonExerciseInput = z.input<typeof pythonExerciseSchema>;
+export type SqlExerciseInput = z.input<typeof sqlExerciseSchema>;
+
+// ---------- Projets ----------
+
+export interface ProjectStep {
+  id: string;
+  title: string;
+  exerciseId: string;
+  /** Question posée pour le journal de décisions de cette étape. */
+  decisionPrompt: string;
+}
+
+export interface Project {
+  id: string;
+  version: number;
+  domain: DomainId;
+  title: string;
+  summary: string;
+  brief: string;
+  deliverables: string[];
+  acceptance: string[];
+  steps: ProjectStep[];
 }

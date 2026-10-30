@@ -13,7 +13,7 @@ export async function setEditorCode(page: Page, code: string) {
 export async function editorText(page: Page) {
   return page.evaluate(() => {
     const el = document.querySelector(".atelier .editor-wrap") as HTMLElement & { cmView?: { state: { doc: { toString(): string } } } };
-    return el.cmView!.state.doc.toString();
+    return el?.cmView?.state.doc.toString() ?? "";
   });
 }
 
@@ -23,4 +23,5 @@ export async function completeOnboarding(page: Page) {
   for (let i = 0; i < 3; i++) await page.getByRole("button", { name: /Continuer/ }).click();
   await page.getByRole("button", { name: /Voir mon parcours/ }).click();
   await page.getByRole("button", { name: "Enregistrer et commencer" }).click();
+  await page.getByRole("heading", { name: /Bonjour/ }).waitFor();
 }

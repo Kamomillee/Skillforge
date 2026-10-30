@@ -61,7 +61,8 @@ export type EventType =
   | "explain"
   | "diagnostic"
   | "report"
-  | "review-done";
+  | "review-done"
+  | "project-export";
 
 export interface LearningEvent {
   id?: number;

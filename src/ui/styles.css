@@ -1109,6 +1109,151 @@ dialog::backdrop {
   box-shadow: var(--shadow);
 }
 
+/* ---------- SQL : résultats, schéma, visualisations ---------- */
+.result-wrap {
+  overflow-x: auto;
+  max-height: 420px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-2);
+}
+table.result {
+  border-collapse: collapse;
+  font: 0.82rem/1.4 var(--font-mono);
+  width: max-content;
+  min-width: 100%;
+}
+table.result caption {
+  text-align: left;
+  font: 600 0.8rem var(--font-sans);
+  color: var(--ink-2);
+  padding: 6px 8px;
+  caption-side: top;
+}
+table.result th,
+table.result td {
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+table.result th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-2);
+  font-weight: 650;
+}
+table.result .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.null-cell {
+  font-style: italic;
+  color: var(--ink-3);
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+}
+.result-wrap + p {
+  margin-top: 4px;
+}
+.schema-details {
+  margin: var(--space-3) 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  background: var(--surface);
+}
+.schema-details > summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.schema-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-2);
+}
+.schema-table {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  background: var(--surface-2);
+}
+.schema-table ul {
+  margin: 6px 0;
+}
+.schema-table li {
+  padding: 1px 0;
+}
+.clause-pipeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.clause-pipeline li {
+  font: 600 0.8rem var(--font-mono);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 10px;
+  color: var(--ink-3);
+}
+.clause-pipeline li.done {
+  color: var(--ink-2);
+  border-style: dashed;
+}
+.clause-pipeline li.current {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.join-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-3);
+}
+table.result.mini {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+table.result.mini tr.current {
+  background: var(--accent-soft);
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+table.result.mini tr.current.match {
+  background: var(--success-soft);
+  outline-color: var(--success);
+}
+table.result.mini tr.current.nomatch {
+  background: var(--surface-2);
+  outline-style: dashed;
+  outline-color: var(--ink-3);
+}
+.er-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 0.9rem;
+}
+.mobile-only {
+  display: none;
+}
+.splitter.static {
+  cursor: default;
+  pointer-events: none;
+}
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-3);
+}
+
 @media (max-width: 900px) {
   .welcome-hero,
   .dash {
@@ -1131,6 +1276,14 @@ dialog::backdrop {
   .lesson-nav,
   .splitter {
     display: none;
+  }
+  .mobile-only {
+    display: initial;
+  }
+  select.mobile-only {
+    display: block;
+    width: 100%;
+    margin-bottom: var(--space-3);
   }
   .mobile-tabs {
     display: flex;
@@ -1182,4 +1335,14 @@ dialog::backdrop {
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+
+a.card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  padding: var(--space-4);
+}
+a.card-link:hover {
+  border-color: var(--accent);
 }

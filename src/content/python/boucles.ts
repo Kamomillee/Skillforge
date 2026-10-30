@@ -1,4 +1,4 @@
-import type { Exercise, Lesson } from "../types";
+import type { Lesson, PythonExerciseInput } from "../types";
 
 /**
  * Leçon Python A — Boucles et accumulateurs.
@@ -8,7 +8,7 @@ import type { Exercise, Lesson } from "../types";
 
 const CONCEPT = "python.a.boucles";
 
-export const exercisesBoucles: Exercise[] = [
+export const exercisesBoucles: PythonExerciseInput[] = [
   {
     id: "py-boucles-ex1-remboursements",
     version: 1,

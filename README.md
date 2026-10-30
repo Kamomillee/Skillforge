@@ -2,7 +2,7 @@
 
 Plateforme de formation interactive en français : Python pour les données, SQL, applications LLM (RAG, outils, évaluation), BI / Power BI et machine learning appliqué. Public : étudiant·e de bachelor en systèmes d'information et business analytics qui veut comprendre, modifier et expliquer le code qu'il ou elle produit.
 
-> **État : étape 1 sur 7 — tranche verticale.** Une leçon Python complète est jouable de bout en bout (onboarding → leçon → visualisation → exercice exécuté réellement → correction par tests → sauvegarde → reprise). Le reste du programme est listé dans la [matrice de couverture](docs/COUVERTURE.md) avec son statut réel.
+> **État : étape 2 sur 7.** Jouables de bout en bout : une leçon Python (boucles) et trois leçons SQL (SELECT/WHERE/NULL, agrégations, jointures) sur un vrai PostgreSQL exécuté dans le navigateur, plus le projet SQL « Base de données d'une PME » (5 questions métier vérifiées, journal de décisions, export Markdown). Le reste du programme est listé dans la [matrice de couverture](docs/COUVERTURE.md) avec son statut réel.
 
 ## Démarrage
 
@@ -37,11 +37,12 @@ Cross-Origin-Embedder-Policy: require-corp
 
 ```bash
 pnpm typecheck        # TypeScript strict
-pnpm test             # 48 tests : contenus exécutés dans Pyodide (Node) + logique + stockage
-pnpm build && pnpm test:e2e   # 8 tests Playwright dans Chromium (desktop + mobile)
+pnpm test             # 150 tests : contenus Python (Pyodide) et SQL (PGlite) exécutés réellement, logique, stockage, couverture
+pnpm build && pnpm test:e2e   # 14 tests Playwright dans Chromium (desktop + mobile)
+pnpm docs:couverture  # régénère docs/COUVERTURE.md depuis src/content/curriculum.ts
 ```
 
-Les tests de contenu exécutent **réellement** chaque solution de référence, chaque code de départ, des solutions alternatives et des erreurs typiques avec le même harnais et la même version de Pyodide que le navigateur. La trace pas à pas de la visualisation est comparée à une trace réelle `sys.settrace`.
+Les tests de contenu exécutent **réellement** chaque solution de référence, chaque code de départ, des solutions alternatives et des erreurs typiques avec le même harnais et le même moteur que le navigateur (Pyodide pour Python, PGlite pour SQL). La trace de la boucle est comparée à `sys.settrace` ; les étapes des visualisations SQL et le résultat de la jointure pas à pas sont comparés à PostgreSQL.
 
 ## Documentation
 
@@ -52,19 +53,21 @@ Les tests de contenu exécutent **réellement** chaque solution de référence, 
 | [docs/COUVERTURE.md](docs/COUVERTURE.md) | Matrice domaine → module → notion → objectif → activité → évaluation → projet |
 | [docs/FEUILLE-DE-ROUTE.md](docs/FEUILLE-DE-ROUTE.md) | Étapes 1 à 7, état et reprise |
 | [docs/LIMITES.md](docs/LIMITES.md) | Limites connues, honnêtement |
-| [docs/CONTRIBUER.md](docs/CONTRIBUER.md) | Ajouter une leçon, un exercice, une visualisation |
+| [docs/CONTRIBUER.md](docs/CONTRIBUER.md) | Ajouter une leçon, un exercice (Python ou SQL), un projet, une visualisation |
+| [docs/DONNEES.md](docs/DONNEES.md) | Jeux de données : provenance, schéma, anomalies volontaires |
 
 ## Arborescence
 
 ```
 src/
-  content/       contenus pédagogiques versionnés (leçons, exercices, matrice de couverture)
-  grading/       harnais Python de correction, rapport, explications d'erreurs en français
+  content/       contenus pédagogiques versionnés (leçons, exercices, projets, jeux de données, matrice)
+  grading/       harnais Python, comparaison de résultats SQL, rapport, explications d'erreurs en français
   runtime/python Web Worker Pyodide + client (limite de temps, interruption, redémarrage)
+  runtime/sql    Web Worker PGlite + moteur partagé avec les tests (isolation, cas cachés, schéma)
   storage/       IndexedDB : profil, parcours, brouillons, tentatives, événements, révisions
   domain/        logique pure : maîtrise explicable, recommandations, révisions, parcours
   ui/            interface React (pages, composants, visualisations)
 tests/           tests unitaires et tests de contenu (Vitest)
 e2e/             tests navigateur (Playwright)
-scripts/         récupération de Pyodide
+scripts/         récupération de Pyodide, génération de la matrice de couverture
 ```

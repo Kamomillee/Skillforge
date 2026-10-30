@@ -10,15 +10,23 @@
 2. Le référencer dans une section (`{ type: "exercise", exerciseId }`) et l'exporter via `src/content/index.ts`.
 3. `pnpm test:content` vérifie automatiquement : la référence réussit tout, le code de départ échoue, il existe des tests visibles et cachés. **Ajouter** au moins un test d'erreur typique et une solution alternative dans `tests/content/`.
 
+## Un exercice SQL
+1. Dans `src/content/sql/<leçon>.ts`, ajouter un objet `language: "sql"` : `starterCode`, `referenceSolution`, `checks` (au moins un visible sur les données actuelles et un caché avec `setup` qui modifie les données pour déjouer une réponse codée en dur), `orderBy` **seulement** si l'énoncé exige un ordre, `tolerance` si l'énoncé demande un arrondi, `columnMode: "position"` si les noms de colonnes sont libres.
+2. Ajouter dans `tests/content/sql.test.ts` : au moins une **erreur typique** (`WRONG`) et une **solution alternative** (`ALTERNATIVES`). Le test vérifie aussi que chaque cas caché fait échouer au moins une erreur typique (sinon il ne sert à rien).
+3. Les requêtes de `sql-steps` et les exemples exécutables (`code` avec `language: "sql"`, `runnable: true`) sont exécutés par les tests.
+
 ## Une leçon
 - Respecter la boucle en 10 temps (`loopStages`) : problème, intuition, schéma, démonstration, prédiction, guidé, autonome, débogage/correction, projet, révision.
 - Introduire chaque terme anglais utile via le glossaire (`[[terme]]` dans le texte) avec sa définition française.
 - Renseigner `validationExerciseId` pour permettre de passer la notion par un test.
-- Mettre à jour le statut de la notion dans `src/content/curriculum.ts` **uniquement** quand la leçon est testée.
+- Mettre à jour le statut de la notion dans `src/content/curriculum.ts` **uniquement** quand la leçon est testée, puis `pnpm docs:couverture`. `tests/unit/content.test.ts` refuse une notion « Disponible » sans leçon ni exercice.
 
 ## Une visualisation
 - Composant React dans `src/ui/viz/`, avec : lecture/pause, pas à pas avant/arrière, réinitialisation, vitesse, **version texte équivalente**, respect de `prefers-reduced-motion`, information jamais portée par la seule couleur (icône ou libellé en plus).
 - Si la visualisation décrit une exécution, ajouter un test qui compare les étapes rédigées à une exécution réelle (voir le test de `LoopTracer` dans `tests/content/python-boucles.test.ts`).
 
+## Un projet
+- Objet `Project` (`src/content/types.ts`) : mandat, livrables, critères d'acceptation, étapes → `exerciseId` (`kind: "project"`) + question du journal de décisions. L'enregistrer dans `projects` (`src/content/index.ts`) ; la page `#/projet/<id>` et l'export Markdown sont génériques.
+
 ## Jeux de données
-- Étape 1 : uniquement de petites données synthétiques écrites dans les énoncés. Les jeux de données (ventes, clients, tickets, documents, données dégradées) seront ajoutés dans `public/datasets/` avec leur provenance et leurs conditions d'usage à partir de l'étape 2.
+- Générés de façon déterministe dans `src/content/datasets/` (graine fixe), documentés dans [DONNEES.md](DONNEES.md) avec leur provenance et leurs anomalies volontaires. `tests/content/sql.test.ts` vérifie les invariants dont dépendent les exercices (clients sans commande, NULL, produit jamais vendu…).

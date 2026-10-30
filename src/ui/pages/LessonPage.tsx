@@ -7,7 +7,8 @@ import { useApp } from "../app-context";
 import { navigate, type Route } from "../router";
 import { LessonBlockView } from "../components/Blocks";
 import { Workbench } from "../components/Workbench";
-import { Sandbox } from "../components/Sandbox";
+import { Sandbox, SqlSandbox } from "../components/Sandbox";
+import { domainById, moduleById } from "../../content";
 import { Dialog } from "../components/Dialog";
 
 const readWidth = () => {
@@ -141,7 +142,9 @@ export function LessonPage({ route }: { route: Route }) {
       </div>
 
       <nav className="lesson-nav" aria-label="Étapes de la leçon">
-        <div className="eyebrow">Python · Module A</div>
+        <div className="eyebrow">
+          {domainById[lesson.domain].short} · Module {moduleById(lesson.moduleId)?.letter ?? ""}
+        </div>
         <div style={{ fontWeight: 650, marginBottom: 12, lineHeight: 1.35 }}>{lesson.title}</div>
         <ol>
           {lesson.sections.map((s, k) => (
@@ -248,6 +251,8 @@ export function LessonPage({ route }: { route: Route }) {
       <aside className={`atelier${fullscreen ? " fullscreen" : ""}`} aria-label="Atelier pratique">
         {exercise ? (
           <Workbench key={exercise.id} exercise={exercise} lesson={lesson} fullscreen={fullscreen} onFullscreen={setFullscreen} />
+        ) : lesson.domain === "sql" ? (
+          <SqlSandbox />
         ) : (
           <Sandbox />
         )}

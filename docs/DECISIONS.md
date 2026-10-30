@@ -38,5 +38,20 @@ Format court : contexte → décision → conséquences. Les décisions sont ré
 - **Décision** : leçons et exercices sont des modules TS (typage, relecture en revue de code), validés par zod au chargement et testés par exécution.
 - **Conséquences** : un outil d'administration des contenus (étape 7) pourra exporter vers ce format ou vers une base.
 
-## D9 — SQL (étape 2) : choix à confirmer par mesure
-- **Piste** : PGlite (PostgreSQL compilé en WebAssembly, exécution dans le navigateur) pour un vrai dialecte PostgreSQL ; repli sur SQLite (sql.js) avec dialecte clairement indiqué si les limites mesurées (taille, temps de démarrage) sont bloquantes. La décision sera prise après essai réel, comme pour Pyodide.
+## D9 — SQL : PGlite (PostgreSQL 18.6 en WebAssembly), dans un Web Worker
+- **Choix** : `@electric-sql/pglite` 0.5.10, vrai PostgreSQL (dialecte, messages d'erreur, codes SQLSTATE et positions, fonctions de fenêtre, `EXPLAIN`, `to_char`, `NOT EXISTS`…). L'étudiant apprend le SQL qu'il retrouvera en entreprise, pas un dialecte simplifié.
+- **Mesures** (30/10/2026) : ~11 Mo de WebAssembly + 6 Mo de données (3,7 Mo gzip pour le wasm), chargés seulement à l'ouverture d'un contenu SQL ; moteur prêt en ~3 s (Chromium headless, initialisation + chargement du jeu de données) ; ensemencement ~60 ms ; correction d'un exercice (3 à 4 cas) 20 à 70 ms.
+- **Limite trouvée** : `statement_timeout` n'interrompt pas une requête dans PGlite (une CTE récursive infinie bloque). D'où le **worker** : la limite de temps termine le worker et en recrée un (base réensemencée). Testé de bout en bout.
+- **Isolation des données** : chaque requête s'exécute dans `BEGIN … ROLLBACK` ; les mots-clés de contrôle de transaction (`COMMIT`, `ROLLBACK`, `BEGIN`…) sont refusés avec un message (code interne `SF001`). Une requête `DELETE` ne laisse aucune trace (testé).
+- **Repli écarté** : SQLite (sql.js) est plus léger mais n'a ni les mêmes types, ni les mêmes messages, ni `to_char` ; il aurait fallu signaler partout les différences de dialecte.
+
+## D10 — Correction SQL par comparaison de résultats
+- La requête de l'étudiant et la requête de référence sont exécutées sur **le même état des données**, pour chaque vérification : les données actuelles (visible) puis des états modifiés par un `setup` (cachés : nouvelle ligne, égalité de tri, homonymes, commande annulée…). Une requête qui « code en dur » les identifiants attendus échoue ainsi sur les cas cachés.
+- Comparaison en **multiensemble** (les doublons comptent), colonnes par nom (ou par position si l'énoncé le dit), nombres comparés avec une tolérance d'arrondi déclarée par exercice. L'**ordre** n'est vérifié que si l'énoncé l'exige (`orderBy`) : on vérifie alors la séquence des clés de tri, en acceptant tout ordre entre lignes à égalité.
+- Les cas cachés n'affichent jamais leurs lignes : seulement le nombre de lignes attendues et obtenues.
+- Les **pistes** (erreurs fréquentes) viennent d'abord de la vérification échouée, puis sont précisées par des indices lus dans la requête (`= NULL`, `COUNT(*)` après `LEFT JOIN`) ; elles n'influencent jamais la réussite.
+
+## D11 — Projet : étapes = exercices versionnés + journal de décisions
+- Chaque étape de projet est un exercice SQL ordinaire (`kind: "project"`) : même correction, mêmes tentatives versionnées, même sauvegarde. Une étape réussie sans solution affichée compte comme preuve « Démontré » pour sa notion.
+- Le journal de décisions est sauvegardé par étape (clé `journal:<projet>:<étape>`) : deux onglets ne peuvent s'écraser qu'au niveau d'un même champ, et c'est le dernier enregistrement qui gagne (voir LIMITES).
+- L'export Markdown recalcule les résultats au moment de l'export avec la dernière requête **vérifiée** (sinon le brouillon, signalé comme tel). Aucune note globale n'est inventée : les critères d'acceptation sont listés pour relecture.

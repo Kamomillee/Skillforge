@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { Attempt, Draft, LearningEvent, LearningPath, Profile, ResumePoint, Review } from "../storage/store";
 import { Store } from "../storage/store";
 import { getRunner, type PythonRunner, type RunnerState } from "../runtime/python/client";
+import { getSqlRunner, type SqlRunner } from "../runtime/sql/client";
 
 export interface Snapshot {
   profile?: Profile;
@@ -20,6 +21,8 @@ interface Ctx {
   refresh: () => Promise<void>;
   runner: PythonRunner;
   runnerState: RunnerState;
+  sqlRunner: SqlRunner;
+  sqlState: RunnerState;
   toast: (msg: string) => void;
 }
 
@@ -51,9 +54,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const runner = useMemo(() => getRunner(), []);
   const [runnerState, setRunnerState] = useState<RunnerState>(runner.state);
+  const sqlRunner = useMemo(() => getSqlRunner(), []);
+  const [sqlState, setSqlState] = useState<RunnerState>(sqlRunner.state);
   const [toastMsg, setToast] = useState<string | null>(null);
 
   useEffect(() => runner.subscribe(setRunnerState), [runner]);
+  useEffect(() => sqlRunner.subscribe(setSqlState), [sqlRunner]);
 
   useEffect(() => {
     Store.open()
@@ -91,7 +97,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     );
 
   return (
-    <AppCtx.Provider value={{ store, data, refresh, runner, runnerState, toast }}>
+    <AppCtx.Provider value={{ store, data, refresh, runner, runnerState, sqlRunner, sqlState, toast }}>
       {children}
       {toastMsg && (
         <div className="toast" role="status">

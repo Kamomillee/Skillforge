@@ -1,5 +1,7 @@
-import type { Exercise, TestCase } from "../content/types";
+import type { PythonExercise, SqlExercise, TestCase } from "../content/types";
+import type { CheckOutcome, SqlError } from "../runtime/sql/engine";
 import type { PyErrorInfo } from "./errors";
+import { compareResults, describeDiff } from "./sql-compare";
 
 /** Résultat brut renvoyé par sf_grade (harnais Python). */
 export interface RawGradeResult {
@@ -31,6 +33,9 @@ export interface TestReport {
   error?: PyErrorInfo;
   feedback?: string;
   misconception?: string;
+  /** Détail de comparaison (SQL). */
+  detail?: string;
+  sqlError?: SqlError;
 }
 
 export interface GradeReport {
@@ -44,6 +49,8 @@ export interface GradeReport {
   loadError?: PyErrorInfo;
   missingFunction?: boolean;
   placeholder?: boolean;
+  /** Erreur PostgreSQL de la requête de l'étudiant sur les données de base. */
+  sqlError?: SqlError;
   tests: TestReport[];
   misconceptions: string[];
   stdout: string;
@@ -71,7 +78,7 @@ function feedbackFor(t: TestCase, r: RawGradeResult["tests"][number]): string | 
   return t.hidden ? "Le résultat ne correspond pas à l'attendu sur ce cas." : undefined;
 }
 
-export function buildReport(ex: Exercise, raw: RawGradeResult, durationMs: number): GradeReport {
+export function buildReport(ex: PythonExercise, raw: RawGradeResult, durationMs: number): GradeReport {
   const tests: TestReport[] = ex.tests.map((t) => {
     const r = raw.tests.find((x) => x.id === t.id);
     const passed = !!r?.passed;
@@ -114,6 +121,63 @@ export function buildReport(ex: Exercise, raw: RawGradeResult, durationMs: numbe
 }
 
 /** Spécification transmise au harnais (sans la solution de référence). */
-export function gradingSpec(ex: Exercise) {
+export function gradingSpec(ex: PythonExercise) {
   return JSON.stringify({ functionName: ex.functionName, tests: ex.tests });
+}
+
+/**
+ * Indices lus dans le texte de la requête, plus précis que l'erreur type associée à une vérification.
+ * Ils ne servent qu'à formuler la piste : la réussite dépend uniquement de la comparaison des résultats.
+ */
+export function sqlMisconceptionHint(code: string, fallback?: string): string | undefined {
+  const sql = code.replace(/--[^\n]*/g, " ").replace(/\s+/g, " ");
+  const hasLeft = /\bLEFT\s+(OUTER\s+)?JOIN\b/i.test(sql);
+  if (/(=|<>|!=)\s*NULL\b/i.test(sql)) return "null-egalite";
+  if (hasLeft && /COUNT\s*\(\s*\*\s*\)/i.test(sql)) return "count-etoile-left";
+  if (fallback === "inner-au-lieu-de-left" && hasLeft) return undefined;
+  if (fallback === "count-etoile-left" && !/COUNT\s*\(\s*\*\s*\)/i.test(sql)) return undefined;
+  return fallback;
+}
+
+/** Rapport SQL : chaque vérification compare le résultat de l'étudiant à celui de la référence sur le même état des données. */
+export function buildSqlReport(ex: SqlExercise, outcomes: CheckOutcome[], durationMs: number, code = ""): GradeReport {
+  const tests: TestReport[] = ex.checks.map((c) => {
+    const o = outcomes.find((x) => x.id === c.id);
+    const base: TestReport = { id: c.id, label: c.label, hidden: c.hidden, passed: false };
+    if (!o) return base;
+    if (!o.expected.ok) throw new Error(`Référence invalide (${ex.id}/${c.id}) : ${o.expected.error.message}`);
+    if (!o.got.ok) {
+      base.sqlError = o.got.error;
+      base.feedback = "La requête a produit une erreur sur ce cas.";
+      return base;
+    }
+    const diff = compareResults(o.expected.result, o.got.result, { columnMode: ex.columnMode, orderBy: ex.orderBy, tolerance: ex.tolerance });
+    base.passed = diff.kind === "ok";
+    if (!base.passed) {
+      base.misconception = diff.kind === "columns" ? "colonnes" : diff.kind === "order" ? "ordre-tri" : sqlMisconceptionHint(code, c.misconception);
+      base.detail =
+        c.hidden && diff.kind === "rows"
+          ? `Lignes attendues : ${diff.expectedCount}, obtenues : ${diff.gotCount}${diff.expectedCount === diff.gotCount ? " (mêmes nombres de lignes, mais des valeurs diffèrent)" : ""}.`
+          : describeDiff(diff);
+    }
+    return base;
+  });
+  const passedCount = tests.filter((t) => t.passed).length;
+  const hidden = tests.filter((t) => t.hidden);
+  const firstError = tests.find((t) => t.sqlError)?.sqlError;
+  const misconceptions = [...new Set(tests.flatMap((t) => (t.misconception ? [t.misconception] : [])))];
+  return {
+    exerciseId: ex.id,
+    exerciseVersion: ex.version,
+    status: passedCount === tests.length ? "passed" : firstError && tests.every((t) => t.sqlError) ? "error" : "failed",
+    passedCount,
+    total: tests.length,
+    hiddenPassed: hidden.filter((t) => t.passed).length,
+    hiddenTotal: hidden.length,
+    sqlError: firstError,
+    tests,
+    misconceptions,
+    stdout: "",
+    durationMs,
+  };
 }

@@ -1,18 +1,18 @@
 # Matrice de couverture pédagogique
 
-> Fichier généré depuis `src/content/curriculum.ts` (source de vérité, également affichée dans l'application : page **Programme**).
-> Statuts : Prévu → Rédigé → Implémenté → Testé → Disponible. Seul « Disponible » est jouable par l'étudiant.
+> Fichier généré depuis `src/content/curriculum.ts` (source de vérité, également affichée dans l'application : page **Programme**). Régénérer avec `pnpm docs:couverture` ; `pnpm test` échoue si ce fichier n'est plus à jour.
+> Statuts : Prévu → Rédigé → Implémenté → Testé → Disponible. Seul « Disponible » est jouable comme leçon ; « Testé » signifie qu'un exercice vérifié existe (par exemple une étape de projet) sans leçon dédiée.
 
 ## Synthèse
 
 | Domaine | Notions | Prévu | Rédigé | Implémenté | Testé | Disponible | Projet |
 |---|---|---|---|---|---|---|---|
 | Python | 58 | 57 | 0 | 0 | 0 | 1 | Pipeline d'import, nettoyage et contrôle qualité (Prévu) |
-| SQL | 50 | 50 | 0 | 0 | 0 | 0 | Base de données d'une PME (Prévu) |
+| SQL | 50 | 39 | 0 | 0 | 4 | 7 | Base de données d'une PME (Disponible) |
 | LLM | 69 | 69 | 0 | 0 | 0 | 0 | Assistant documentaire avec citations (Prévu) |
 | BI | 48 | 48 | 0 | 0 | 0 | 0 | Rapport ventes, marges et retours (Prévu) |
 | ML | 55 | 55 | 0 | 0 | 0 | 0 | Prédiction du départ de clients (Prévu) |
-| **Total** | **280** | 279 | 0 | 0 | 0 | 1 | Projet transversal : copilote data PME (Prévu) |
+| **Total** | **280** | 268 | 0 | 0 | 4 | 8 | Projet transversal : copilote data PME (Prévu) |
 
 ## Python pour les données et l'automatisation
 
@@ -95,14 +95,14 @@ Visualisations prévues : Déplacement des lignes dans une jointure · Résultat
 | A. Modèle relationnel | Modèles entité-association | Prévu | — | — | — | Base de données d'une PME |
 | A. Modèle relationnel | Normalisation jusqu'à la 3FN | Prévu | — | — | — | Base de données d'une PME |
 | A. Modèle relationnel | Arbitrages de dénormalisation | Prévu | — | — | — | Base de données d'une PME |
-| B. Requêtes | SELECT, FROM et WHERE | Prévu | — | — | — | Base de données d'une PME |
-| B. Requêtes | ORDER BY et LIMIT | Prévu | — | — | — | Base de données d'une PME |
+| B. Requêtes | SELECT, FROM et WHERE | Disponible | Écrire une requête qui sélectionne des colonnes et filtre des lignes avec des conditions combinées (AND, OR, parenthèses), et prédire le nombre de lignes obtenues. | Ordre logique d'une requête pas à pas (résultats réels), Prédiction, Exemple exécutable, Exercice guidé, Débogage (priorité AND/OR), Test de validation | Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé. | Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown. |
+| B. Requêtes | ORDER BY et LIMIT | Disponible | Trier un résultat sur une ou plusieurs clés, gérer les égalités et limiter le nombre de lignes. | Exercice autonome avec cas cachés, Test de validation (ordre vérifié) | Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé. | Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown. |
 | B. Requêtes | DISTINCT | Prévu | — | — | — | Base de données d'une PME |
 | B. Requêtes | Expressions et alias | Prévu | — | — | — | Base de données d'une PME |
 | B. Requêtes | CASE | Prévu | — | — | — | Base de données d'une PME |
-| B. Requêtes | Agrégations | Prévu | — | — | — | Base de données d'une PME |
-| B. Requêtes | GROUP BY et HAVING | Prévu | — | — | — | Base de données d'une PME |
-| B. Requêtes | INNER JOIN et LEFT JOIN | Prévu | — | — | — | Base de données d'une PME |
+| B. Requêtes | Agrégations | Disponible | Calculer des totaux, moyennes et comptages (COUNT(*) vs COUNT(colonne)) et choisir la bonne granularité. | Ordre logique avec GROUP BY et HAVING (résultats réels), Prédiction, Exemple exécutable, Exercice guidé, Exercice autonome, Test de validation | Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé. | Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown. |
+| B. Requêtes | GROUP BY et HAVING | Disponible | Regrouper des lignes et filtrer des groupes avec HAVING, en distinguant WHERE (lignes) de HAVING (groupes). | Débogage (WHERE vs HAVING), Exercice autonome, Test de validation | Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé. | Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown. |
+| B. Requêtes | INNER JOIN et LEFT JOIN | Disponible | Joindre deux à trois tables, choisir INNER ou LEFT JOIN et compter correctement les lignes sans correspondance. | Jointure pas à pas (INNER / LEFT), Prédiction, Exemple exécutable, Exercice guidé, Exercice autonome, Test de validation | Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé. | Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown. |
 | B. Requêtes | Autres jointures selon le moteur | Prévu | — | — | — | Base de données d'une PME |
 | B. Requêtes | UNION et UNION ALL | Prévu | — | — | — | Base de données d'une PME |
 | B. Requêtes | Sous-requêtes | Prévu | — | — | — | Base de données d'une PME |
@@ -111,8 +111,8 @@ Visualisations prévues : Déplacement des lignes dans une jointure · Résultat
 | B. Requêtes | Fonctions de fenêtre | Prévu | — | — | — | Base de données d'une PME |
 | B. Requêtes | Rangs, cumuls et période précédente | Prévu | — | — | — | Base de données d'une PME |
 | B. Requêtes | Dates et chaînes | Prévu | — | — | — | Base de données d'une PME |
-| B. Requêtes | Logique à trois valeurs avec NULL | Prévu | — | — | — | Base de données d'une PME |
-| B. Requêtes | Doublons créés par les jointures | Prévu | — | — | — | Base de données d'une PME |
+| B. Requêtes | Logique à trois valeurs avec NULL | Disponible | Expliquer pourquoi « = NULL » ne trouve rien et utiliser IS NULL / IS NOT NULL / COALESCE à bon escient. | Prédiction, Exercice autonome (fiches incomplètes) avec cas cachés | Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé. | Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown. |
+| B. Requêtes | Doublons créés par les jointures | Disponible | Repérer qu'une jointure multiplie des lignes avant une agrégation et corriger le calcul (agréger avant de joindre, ou sous-requête). | Débogage avec cas cachés, Discussion dans le journal du projet | Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé. | Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown. |
 | C. Modifier et exploiter une base | CREATE et ALTER | Prévu | — | — | — | Base de données d'une PME |
 | C. Modifier et exploiter une base | INSERT, UPDATE et DELETE | Prévu | — | — | — | Base de données d'une PME |
 | C. Modifier et exploiter une base | Transactions | Prévu | — | — | — | Base de données d'une PME |
@@ -126,14 +126,14 @@ Visualisations prévues : Déplacement des lignes dans une jointure · Résultat
 | C. Modifier et exploiter une base | Permissions | Prévu | — | — | — | Base de données d'une PME |
 | C. Modifier et exploiter une base | Sauvegarde et restauration | Prévu | — | — | — | Base de données d'une PME |
 | C. Modifier et exploiter une base | OLTP et OLAP | Prévu | — | — | — | Base de données d'une PME |
-| D. SQL métier | Chiffre d'affaires | Prévu | — | — | — | Base de données d'une PME |
-| D. SQL métier | Marge | Prévu | — | — | — | Base de données d'une PME |
-| D. SQL métier | Panier moyen | Prévu | — | — | — | Base de données d'une PME |
+| D. SQL métier | Chiffre d'affaires | Testé | Calculer un chiffre d'affaires mensuel selon une définition explicite (statuts inclus, prix facturé). | Étape du projet PME, corrigée par comparaison de résultats, Décision notée dans le journal | Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé. | Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown. |
+| D. SQL métier | Marge | Testé | Calculer une marge brute par produit et la classer. | Étape du projet PME, corrigée par comparaison de résultats, Décision notée dans le journal | Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé. | Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown. |
+| D. SQL métier | Panier moyen | Testé | Calculer un panier moyen par segment à la bonne granularité (par commande). | Étape du projet PME, corrigée par comparaison de résultats, Décision notée dans le journal | Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé. | Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown. |
 | D. SQL métier | Rétention | Prévu | — | — | — | Base de données d'une PME |
 | D. SQL métier | Cohortes | Prévu | — | — | — | Base de données d'une PME |
 | D. SQL métier | Segmentation | Prévu | — | — | — | Base de données d'une PME |
 | D. SQL métier | Classement des produits | Prévu | — | — | — | Base de données d'une PME |
-| D. SQL métier | Suivi de qualité | Prévu | — | — | — | Base de données d'une PME |
+| D. SQL métier | Suivi de qualité | Testé | Produire des indicateurs de suivi (factures en attente, taux de retour) sans doubles comptages. | Étape du projet PME, corrigée par comparaison de résultats, Décision notée dans le journal | Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé. | Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown. |
 | D. SQL métier | Questions ambiguës et définitions | Prévu | — | — | — | Base de données d'une PME |
 
 ## Applications LLM : RAG, outils et évaluation

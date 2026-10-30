@@ -62,6 +62,20 @@ describe("maîtrise explicable", () => {
   });
 });
 
+describe("maîtrise : notions SQL", () => {
+  it("une notion travaillée uniquement par un débogage devient « Démontré » après ce débogage réussi sans aide ciblée", () => {
+    const D = "sql.b.doublons-crees-par-les-jointures";
+    expect(estimateMastery(D, ctx([att("sql-join-ex3-debug-doublons", { status: "passed" })])).level).toBe(3);
+    expect(estimateMastery(D, ctx([att("sql-join-ex3-debug-doublons", { status: "passed", hintLevel: 3 })])).level).toBe(2);
+  });
+  it("le débogage ne suffit pas quand la notion a un exercice autonome", () => {
+    expect(estimateMastery("sql.b.inner-join-et-left-join", ctx([att("sql-join-ex3-debug-doublons", { status: "passed" })])).level).toBe(2);
+  });
+  it("une étape de projet réussie compte comme preuve autonome", () => {
+    expect(estimateMastery("sql.d.marge", ctx([att("pme-p3-marge-produits", { status: "passed" })])).level).toBe(3);
+  });
+});
+
 describe("révisions espacées", () => {
   it("planifie à J+1 puis espace en cas de réussite, revient à J+1 en cas d'échec", () => {
     const now = new Date("2026-10-30T10:00:00Z");

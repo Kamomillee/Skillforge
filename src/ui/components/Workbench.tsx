@@ -8,12 +8,15 @@ import { useDraft, type SaveState } from "../hooks/useDraft";
 import { CodeEditor, type EditorHandle } from "./CodeEditor";
 import { ConfirmDialog, Dialog } from "./Dialog";
 import { Md } from "../Md";
+import type { QueryOutcome } from "../../runtime/sql/engine";
+import { ResultTable, SchemaPanel, SqlErrorCard } from "./SqlParts";
 
 const kindLabel: Record<Exercise["kind"], string> = {
   guided: "Exercice guidé",
   autonomous: "Exercice autonome",
   debug: "Débogage",
   validation: "Test de validation",
+  project: "Étape de projet",
 };
 
 const hintLabel = ["", "Question d'orientation", "Indice conceptuel", "Aide ciblée", "Solution expliquée"];
@@ -21,7 +24,8 @@ const hintLabel = ["", "Question d'orientation", "Indice conceptuel", "Aide cibl
 type Output =
   | { kind: "none" }
   | { kind: "run"; text: string; status: "running" | "ok" | "error" | "timeout" | "interrupted"; error: PyErrorInfo | null; ms?: number }
-  | { kind: "grade"; report: GradeReport };
+  | { kind: "sql"; status: "running" | "ok" | "error" | "timeout" | "interrupted"; outcome?: QueryOutcome; message?: string }
+  | { kind: "grade"; report: GradeReport; code: string };
 
 export function Workbench({
   exercise: ex,
@@ -38,7 +42,10 @@ export function Workbench({
   onFullscreen?: (v: boolean) => void;
   onPassed?: (r: GradeReport) => void;
 }) {
-  const { store, runner, runnerState, data, refresh, toast } = useApp();
+  const { store, runner, runnerState, sqlRunner, sqlState, data, refresh, toast } = useApp();
+  const isSql = ex.language === "sql";
+  const engineState = isSql ? sqlState : runnerState;
+  const engine = isSql ? sqlRunner : runner;
   const draftKey = mode === "review" ? `${ex.id}#revision` : ex.id;
   const draft = useDraft(store, ex, draftKey);
   const [out, setOut] = useState<Output>({ kind: "none" });
@@ -49,7 +56,7 @@ export function Workbench({
   const [reportOpen, setReportOpen] = useState(false);
   const [reportText, setReportText] = useState("");
   const editor = useRef<EditorHandle | null>(null);
-  const busy = runnerState.kind === "busy" || runner.isBusy;
+  const busy = engineState.kind === "busy" || engine.isBusy;
   const hintsKey = `hints:${draftKey}`;
 
   useEffect(() => {
@@ -57,8 +64,8 @@ export function Workbench({
     store.get<number>(hintsKey).then((h) => setHintLevel(h ?? 0));
   }, [store, hintsKey]);
 
-  // Démarrage anticipé de Python dès qu'un exercice est affiché.
-  useEffect(() => void runner.init().catch(() => {}), [runner]);
+  // Démarrage anticipé du moteur (Python ou PostgreSQL) dès qu'un exercice est affiché.
+  useEffect(() => void engine.init().catch(() => {}), [engine]);
 
   const attempts = useMemo(
     () => data.attempts.filter((a) => a.exerciseId === draftKey).sort((a, b) => b.at.localeCompare(a.at)),
@@ -69,6 +76,14 @@ export function Workbench({
   async function run() {
     if (busy || draft.code === null) return;
     setTab("console");
+    if (ex.language === "sql") {
+      setOut({ kind: "sql", status: "running" });
+      const r = await sqlRunner.query(draft.code, ex.timeLimitMs);
+      const status = r.status === "ok" && r.outcome && !r.outcome.ok ? "error" : r.status;
+      setOut({ kind: "sql", status, outcome: r.outcome, message: r.message });
+      void store.addEvent({ type: "run", exerciseId: draftKey, lessonId: lesson?.id, data: { status, errorType: r.outcome && !r.outcome.ok ? r.outcome.error.code : undefined } });
+      return;
+    }
     setOut({ kind: "run", text: "", status: "running", error: null });
     const res = await runner.run(draft.code, {
       timeoutMs: ex.timeLimitMs,
@@ -83,8 +98,9 @@ export function Workbench({
     if (busy || draft.code === null) return;
     await draft.flush();
     setTab("tests");
-    const report = await runner.grade(ex, draft.code);
-    setOut({ kind: "grade", report });
+    const code = draft.code;
+    const report = ex.language === "sql" ? await sqlRunner.grade(ex, code) : await runner.grade(ex, code);
+    setOut({ kind: "grade", report, code });
     const solutionViewed = hintLevel >= 4;
     await store.addAttempt({
       exerciseId: draftKey,
@@ -97,7 +113,7 @@ export function Workbench({
       hiddenPassed: report.hiddenPassed,
       hiddenTotal: report.hiddenTotal,
       misconceptions: report.misconceptions,
-      errorType: report.loadError?.type,
+      errorType: report.loadError?.type ?? report.sqlError?.code,
       hintLevel,
       solutionViewed,
       durationMs: report.durationMs,
@@ -108,7 +124,7 @@ export function Workbench({
       if (mode === "review" && existing) {
         await store.putReview(recordReview(existing, !solutionViewed));
         await store.addEvent({ type: "review-done", exerciseId: ex.id, data: { ok: !solutionViewed } });
-      } else if (!solutionViewed && (ex.kind === "autonomous" || ex.kind === "validation")) {
+      } else if (!solutionViewed && (ex.kind === "autonomous" || ex.kind === "validation" || ex.kind === "project")) {
         await store.putReview(scheduleAfterSuccess(concept, existing, new Date(), `Planifiée après la réussite de « ${ex.title} ».`));
       }
       onPassed?.(report);
@@ -200,7 +216,7 @@ export function Workbench({
             ✓ Vérifier
           </button>
           {busy && (
-            <button className="btn sm danger" onClick={() => runner.stop()}>
+            <button className="btn sm danger" onClick={() => engine.stop()}>
               ■ Arrêter
             </button>
           )}
@@ -217,22 +233,41 @@ export function Workbench({
         {draft.code === null ? (
           <div className="editor-wrap" aria-busy="true" />
         ) : (
-          <CodeEditor value={draft.code} onChange={draft.setCode} onRun={run} onSubmit={submit} label={`Éditeur Python : ${ex.title}`} handleRef={editor} />
+          <CodeEditor
+            value={draft.code}
+            onChange={draft.setCode}
+            onRun={run}
+            onSubmit={submit}
+            label={`Éditeur ${isSql ? "SQL" : "Python"} : ${ex.title}`}
+            handleRef={editor}
+            language={ex.language}
+          />
+        )}
+
+        {isSql && (
+          <details className="schema-details">
+            <summary>Schéma de la base et aperçu des tables</summary>
+            <SchemaPanel />
+          </details>
         )}
 
         <div className="out-tabs" role="tablist" aria-label="Résultats">
           <button role="tab" aria-selected={tab === "console"} onClick={() => setTab("console")}>
-            Console
+            {isSql ? "Résultat" : "Console"}
           </button>
           <button role="tab" aria-selected={tab === "tests"} onClick={() => setTab("tests")}>
             Tests
           </button>
           <span className="spacer" style={{ flex: 1 }} />
-          <EngineLine />
+          <EngineLine sql={isSql} />
         </div>
         <div className="out-panel" role="tabpanel" aria-live="polite">
           {tab === "console" ? (
-            <ConsoleView out={out} onGoto={(l) => editor.current?.goToLine(l)} />
+            isSql ? (
+              <SqlConsoleView out={out} code={draft.code ?? ""} limitMs={ex.timeLimitMs} onGoto={(l) => editor.current?.goToLine(l)} />
+            ) : (
+              <ConsoleView out={out} onGoto={(l) => editor.current?.goToLine(l)} />
+            )
           ) : (
             <TestsView out={out} ex={ex} onGoto={(l) => editor.current?.goToLine(l)} />
           )}
@@ -245,14 +280,14 @@ export function Workbench({
               <Md text={ex.explanation} />
               {hintLevel >= 4 ? (
                 <p className="small">La solution avait été affichée : cette réussite est enregistrée mais ne compte pas comme preuve de maîtrise autonome.</p>
-              ) : ex.kind === "autonomous" || ex.kind === "validation" ? (
+              ) : ex.kind === "autonomous" || ex.kind === "validation" || ex.kind === "project" ? (
                 <p className="small">Preuve enregistrée. Une révision est planifiée pour consolider la notion.</p>
               ) : null}
             </div>
           )}
 
           <p className="small muted" style={{ marginTop: 16 }}>
-            Les résultats ci-dessus sont <strong>testés</strong> (tests déterministes exécutés dans ton navigateur). Le tuteur IA, qui donnera un avis qualitatif séparé, arrive dans une
+            Les résultats ci-dessus sont <strong>testés</strong> ({isSql ? "ta requête et la requête de référence exécutées sur les mêmes données, dans ton navigateur" : "tests déterministes exécutés dans ton navigateur"}). Le tuteur IA, qui donnera un avis qualitatif séparé, arrive dans une
             prochaine étape.{" "}
             <button className="btn sm ghost" onClick={() => setReportOpen(true)}>
               Signaler un problème dans cet exercice
@@ -365,18 +400,22 @@ function SaveIndicator({ s, onRetry }: { s: SaveState; onRetry: () => void }) {
   );
 }
 
-function EngineLine() {
-  const { runnerState: s } = useApp();
+function EngineLine({ sql }: { sql?: boolean }) {
+  const { runnerState, sqlState } = useApp();
+  const s = sql ? sqlState : runnerState;
+  const name = sql ? "PostgreSQL" : "Python";
   const text =
     s.kind === "ready"
-      ? `Python ${s.pythonVersion} prêt`
+      ? sql
+        ? `${s.pythonVersion} prêt`
+        : `Python ${s.pythonVersion} prêt`
       : s.kind === "loading"
-        ? "Python démarre…"
+        ? `${name} démarre…`
         : s.kind === "busy"
           ? s.message
           : s.kind === "error"
-            ? "Python indisponible"
-            : "Python en veille";
+            ? `${name} indisponible`
+            : `${name} en veille`;
   return (
     <span className="engine-status" style={{ alignSelf: "center" }} data-testid="engine">
       <span className={`dot ${s.kind === "ready" ? "ok" : s.kind === "error" ? "err" : "busy"}`} aria-hidden="true" />
@@ -427,6 +466,7 @@ function ConsoleView({ out, onGoto }: { out: Output; onGoto: (l: number) => void
         Exécute ton code pour voir sa sortie ici. <kbd>Ctrl</kbd>+<kbd>Entrée</kbd> exécute, <kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>Entrée</kbd> vérifie avec les tests.
       </p>
     );
+  if (out.kind === "sql") return null;
   if (out.kind === "grade")
     return (
       <>
@@ -454,9 +494,43 @@ function ConsoleView({ out, onGoto }: { out: Output; onGoto: (l: number) => void
   );
 }
 
+function SqlConsoleView({ out, code, limitMs, onGoto }: { out: Output; code: string; limitMs: number; onGoto: (l: number) => void }) {
+  if (out.kind === "grade") return <p className="small muted">Les résultats de la vérification sont dans l'onglet « Tests ». « Exécuter » affiche le résultat de ta requête ici.</p>;
+  if (out.kind !== "sql")
+    return (
+      <p className="muted small">
+        Exécute ta requête pour voir son résultat ici. <kbd>Ctrl</kbd>+<kbd>Entrée</kbd> exécute, <kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>Entrée</kbd> vérifie.
+      </p>
+    );
+  if (out.status === "running") return <p className="muted small">Exécution…</p>;
+  if (out.status === "timeout")
+    return (
+      <div className="callout danger" role="alert">
+        <div className="callout-title">Requête arrêtée : limite de {limitMs / 1000} s dépassée</div>
+        <p>Cause fréquente : une CTE récursive sans condition d'arrêt, ou une jointure sans condition (produit cartésien). Le moteur a été redémarré, les données sont intactes.</p>
+      </div>
+    );
+  if (out.status === "interrupted") return <p className="small">■ Requête interrompue. Le moteur a été redémarré.</p>;
+  if (!out.outcome) return <p className="small">Le moteur SQL a rencontré un problème : {out.message ?? "inconnu"}</p>;
+  if (!out.outcome.ok) return <SqlErrorCard err={out.outcome.error} sql={code} onGoto={onGoto} />;
+  const r = out.outcome.result;
+  return (
+    <>
+      {r.columns.length ? <ResultTable result={r} /> : <p className="small">Requête exécutée, aucune colonne renvoyée.</p>}
+      <p className="small muted">Exécutée en {out.outcome.durationMs} ms.</p>
+    </>
+  );
+}
+
 function TestsView({ out, ex, onGoto }: { out: Output; ex: Exercise; onGoto: (l: number) => void }) {
   if (out.kind !== "grade")
-    return (
+    return ex.language === "sql" ? (
+      <p className="muted small">
+        « Vérifier » exécute ta requête et la requête de référence sur {ex.checks.length} états des données ({ex.checks.filter((c) => c.hidden).length} cachés), puis compare les
+        résultats : mêmes colonnes, mêmes lignes{ex.orderBy ? ", et le même ordre (demandé dans l'énoncé)" : " (l'ordre ne compte pas, sauf s'il est demandé)"}. Toute requête
+        correcte est acceptée.
+      </p>
+    ) : (
       <p className="muted small">
         « Vérifier » exécute ta fonction sur {ex.tests.filter((t) => !t.hidden).length} cas visibles et {ex.tests.filter((t) => t.hidden).length} cas cachés. Seul le comportement
         compte : toute solution correcte est acceptée.
@@ -467,14 +541,23 @@ function TestsView({ out, ex, onGoto }: { out: Output; ex: Exercise; onGoto: (l:
     return (
       <div className="callout danger" role="alert">
         <div className="callout-title">{r.status === "timeout" ? `Limite de temps dépassée (${ex.timeLimitMs / 1000} s)` : "Vérification interrompue"}</div>
-        <p>Vérifie qu'aucune boucle ne tourne indéfiniment.</p>
+        <p>{ex.language === "sql" ? "Vérifie qu'aucune CTE récursive ne tourne sans fin et que chaque jointure a une condition." : "Vérifie qu'aucune boucle ne tourne indéfiniment."}</p>
       </div>
     );
+  const label = ex.language === "sql" ? "vérifications" : "tests";
   return (
     <>
       <div className={`grade-summary ${r.status === "passed" ? "passed" : ""}`} data-testid="grade-summary">
         <span className="big">
-          {r.status === "passed" ? "✓ Tous les tests passent" : r.status === "error" ? "⚠ Le code ne peut pas être testé" : `✗ ${r.passedCount}/${r.total} tests réussis`}
+          {r.status === "passed"
+            ? ex.language === "sql"
+              ? "✓ Toutes les vérifications passent"
+              : "✓ Tous les tests passent"
+            : r.status === "error"
+              ? ex.language === "sql"
+                ? "⚠ La requête produit une erreur"
+                : "⚠ Le code ne peut pas être testé"
+              : `✗ ${r.passedCount}/${r.total} ${label} réussi${ex.language === "sql" ? "es" : "s"}`}
         </span>
         <span className="small muted">
           dont {r.hiddenPassed}/{r.hiddenTotal} cachés · {r.durationMs} ms · résultat testé
@@ -482,7 +565,8 @@ function TestsView({ out, ex, onGoto }: { out: Output; ex: Exercise; onGoto: (l:
       </div>
       {r.placeholder && <div className="callout warning">Il reste des « ___ » à remplacer dans ton code.</div>}
       {r.loadError && <ErrorCard err={r.loadError} onGoto={onGoto} />}
-      {r.missingFunction && (
+      {r.status === "error" && r.sqlError && <SqlErrorCard err={r.sqlError} sql={out.code} onGoto={onGoto} />}
+      {r.missingFunction && ex.language === "python" && (
         <div className="callout warning">
           La fonction <code>{ex.functionName}</code> n'est pas définie. Vérifie son nom exact (et qu'elle n'est pas indentée dans un autre bloc).
         </div>
@@ -497,13 +581,13 @@ function TestsView({ out, ex, onGoto }: { out: Output; ex: Exercise; onGoto: (l:
                 <span>{t.label}</span>
                 {t.hidden && <span className="badge">caché</span>}
               </div>
-              {!t.hidden && !t.passed && (
-                <div className="t-detail">
-                  {`Appel   : ${ex.functionName}(${t.args})\nAttendu : ${t.expected}\nObtenu  : ${t.got ?? "—"}`}
-                </div>
+              {ex.language === "python" && !t.hidden && !t.passed && (
+                <div className="t-detail">{`Appel   : ${ex.functionName}(${t.args})\nAttendu : ${t.expected}\nObtenu  : ${t.got ?? "—"}`}</div>
               )}
+              {!t.passed && t.detail && <div className="t-detail">{t.detail}</div>}
               {!t.passed && t.feedback && <div className="small" style={{ marginTop: 4 }}>{t.feedback}</div>}
               {t.error && !t.passed && <ErrorCard err={t.error} onGoto={onGoto} />}
+              {t.sqlError && !t.passed && r.status !== "error" && <SqlErrorCard err={t.sqlError} sql={out.code} onGoto={onGoto} />}
               {t.misconception && (
                 <div className="small" style={{ marginTop: 4 }}>
                   <strong>Piste :</strong> {misconceptionLabels[t.misconception]}
@@ -536,7 +620,7 @@ function HelpPanel({ ex, level, onMore, attempts }: { ex: Exercise; level: numbe
             <div className="eyebrow" style={{ marginBottom: 4 }}>
               {h.level}. {hintLabel[h.level]}
             </div>
-            {h.text.includes("\n") && h.text.trimStart().startsWith("def ") ? <pre>{h.text}</pre> : <Md text={h.text} />}
+            {h.text.includes("\n") && /^(def |SELECT|WITH)/i.test(h.text.trimStart()) ? <pre>{h.text}</pre> : <Md text={h.text} />}
           </div>
         ))}
     </div>

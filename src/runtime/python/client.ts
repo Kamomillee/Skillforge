@@ -1,4 +1,4 @@
-import type { Exercise } from "../../content/types";
+import type { PythonExercise } from "../../content/types";
 import type { PyErrorInfo } from "../../grading/errors";
 import { buildReport, gradingSpec, type GradeReport } from "../../grading/evaluate";
 import type { FromWorker, ToWorker } from "./protocol";
@@ -163,7 +163,7 @@ export class PythonRunner {
     return { status: error ? "error" : "ok", error, output, durationMs };
   }
 
-  async grade(ex: Exercise, code: string): Promise<GradeReport> {
+  async grade(ex: PythonExercise, code: string): Promise<GradeReport> {
     const { msg, stopReason, durationMs } = await this.send("grade", { code, spec: gradingSpec(ex), packages: ex.packages }, ex.timeLimitMs);
     const empty: GradeReport = {
       exerciseId: ex.id,

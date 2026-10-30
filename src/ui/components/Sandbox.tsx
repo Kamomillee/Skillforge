@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useApp } from "../app-context";
 import { CodeEditor } from "./CodeEditor";
 import { explainError, type PyErrorInfo } from "../../grading/errors";
+import type { QueryOutcome } from "../../runtime/sql/engine";
+import { ResultTable, SchemaPanel, SqlErrorCard } from "./SqlParts";
 
 const DEFAULT = `# Bac à sable : essaie ce que tu veux ici.
 montants = [120, -30, 45, 80]
@@ -66,6 +68,83 @@ export function Sandbox() {
               <p style={{ margin: "4px 0 0" }}>{explainError(out.error).hint}</p>
               <pre>{out.error.summary}</pre>
             </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+const DEFAULT_SQL = `-- Bac à sable SQL : la base de formation est en lecture seule (chaque requête est annulée).
+SELECT statut, COUNT(*) AS nb
+FROM commandes
+GROUP BY statut
+ORDER BY nb DESC;
+`;
+
+/** Bac à sable SQL sur la base de formation PME. */
+export function SqlSandbox() {
+  const { store, sqlRunner, sqlState } = useApp();
+  const [code, setCode] = useState<string | null>(null);
+  const [out, setOut] = useState<{ status: string; outcome?: QueryOutcome } | null>(null);
+  const busy = sqlState.kind === "busy" || sqlRunner.isBusy;
+
+  useEffect(() => {
+    store.get<string>("sandbox:sql").then((c) => setCode(c ?? DEFAULT_SQL));
+    void sqlRunner.init().catch(() => {});
+  }, [store, sqlRunner]);
+
+  useEffect(() => {
+    if (code === null) return;
+    const t = setTimeout(() => void store.set("sandbox:sql", code), 600);
+    return () => clearTimeout(t);
+  }, [code, store]);
+
+  async function run() {
+    if (busy || code === null) return;
+    setOut({ status: "running" });
+    const r = await sqlRunner.query(code, 8000);
+    setOut({ status: r.status, outcome: r.outcome });
+  }
+
+  return (
+    <>
+      <div className="wb-head">
+        <span className="badge">Bac à sable SQL</span>
+        <h2 style={{ margin: "8px 0 0", fontSize: "1.1rem" }}>Interroge la base de la PME</h2>
+        <p className="small muted" style={{ margin: "4px 0 0" }}>
+          Pas de tests ici : rien n'est noté. Les exercices s'ouvrent dans cet atelier depuis la leçon.
+        </p>
+      </div>
+      <div className="wb-scroll">
+        <div className="wb-toolbar">
+          <button className="btn sm primary" onClick={run} disabled={busy || code === null}>
+            ▶ Exécuter <kbd>Ctrl ↵</kbd>
+          </button>
+          {busy && (
+            <button className="btn sm danger" onClick={() => sqlRunner.stop()}>
+              ■ Arrêter
+            </button>
+          )}
+        </div>
+        {code !== null && <CodeEditor value={code} onChange={setCode} onRun={run} label="Éditeur SQL du bac à sable" language="sql" />}
+        <details className="schema-details">
+          <summary>Schéma de la base et aperçu des tables</summary>
+          <SchemaPanel />
+        </details>
+        <div className="out-panel" aria-live="polite" data-testid="sandbox-sql-output">
+          {!out ? (
+            <p className="muted small">Le résultat s'affichera ici.</p>
+          ) : out.status === "running" ? (
+            <p className="muted small">Exécution…</p>
+          ) : out.status === "timeout" ? (
+            <div className="callout danger">Requête arrêtée : limite de 8 s dépassée. Le moteur a été redémarré.</div>
+          ) : out.outcome?.ok ? (
+            <ResultTable result={out.outcome.result} />
+          ) : out.outcome ? (
+            <SqlErrorCard err={out.outcome.error} sql={code ?? ""} />
+          ) : (
+            <p className="small">Requête interrompue.</p>
           )}
         </div>
       </div>

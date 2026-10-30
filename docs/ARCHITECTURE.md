@@ -1,8 +1,8 @@
 # Architecture
 
-## Vue d'ensemble (étape 1)
+## Vue d'ensemble (étapes 1 et 2)
 
-Application web statique (Vite + React + TypeScript). Python s'exécute **dans le navigateur de l'étudiant**, dans un Web Worker Pyodide. La progression est stockée localement (IndexedDB). Il n'y a pas encore de serveur : il arrivera avec le tuteur IA (étape 5) et les comptes (étape 7).
+Application web statique (Vite + React + TypeScript). Python s'exécute **dans le navigateur de l'étudiant**, dans un Web Worker Pyodide ; SQL dans un second Web Worker PGlite (PostgreSQL 18.6). La progression est stockée localement (IndexedDB). Il n'y a pas encore de serveur : il arrivera avec le tuteur IA (étape 5) et les comptes (étape 7).
 
 ```
 ┌────────────── Thread principal (React) ──────────────┐        ┌──── Web Worker « python » ────┐
@@ -15,6 +15,13 @@ Application web statique (Vite + React + TypeScript). Python s'exécute **dans l
 │   └─ storage/store.ts ── IndexedDB (navigateur)       │
 └───────────────────────────────────────────────────────┘
 content/ : données versionnées, importées par l'UI et par les tests
+
+┌─ ui/ (atelier SQL, visualisations) ─┐  query / checks / schema  ┌── Web Worker « sql » ─────────────┐
+│ runtime/sql/client.ts               │──────────────────────────►│ PGlite (PostgreSQL 18.6)          │
+│  file d'attente, limite de temps →  │◄──────────────────────────│ runtime/sql/engine.ts :           │
+│  terminate() + nouvelle base        │  résultats normalisés     │  BEGIN … ROLLBACK, setup des cas, │
+│ grading/sql-compare.ts (comparaison)│                           │  base PME ensemencée (graine 42)  │
+└─────────────────────────────────────┘                           └───────────────────────────────────┘
 ```
 
 ### Séparation des responsabilités
@@ -24,6 +31,7 @@ content/ : données versionnées, importées par l'UI et par les tests
 | `content/` | Leçons, exercices (avec version), matrice de couverture. Données pures, validées par zod. | — |
 | `grading/` | Harnais Python (exécuté dans Pyodide), construction du rapport, traduction pédagogique des erreurs. | `content/types` |
 | `runtime/python/` | Cycle de vie du worker, file d'exécution unique, limite de temps, interruption, redémarrage. | `grading/` |
+| `runtime/sql/` | `engine.ts` (pur, partagé navigateur/tests Node) : exécution isolée, cas de vérification, schéma. `worker.ts`/`client.ts` : file d'attente sérialisée, limite de temps par terminaison du worker. | `content/datasets` |
 | `storage/` | Persistance locale ; interface `Store` destinée à recevoir une synchronisation serveur. | — |
 | `domain/` | Logique pure et testée : maîtrise explicable, recommandations justifiées, révisions espacées, parcours. | `content/`, types de `storage/` |
 | `ui/` | Interface. | tout le reste |
@@ -45,11 +53,20 @@ content/ : données versionnées, importées par l'UI et par les tests
 - Diagnostic supplémentaire : `print` au lieu de `return`, `___` restants, fonction absente, erreur de syntaxe avec ligne.
 - Le rapport distingue « résultat testé » ; l'avis du tuteur IA (étape 5) sera affiché séparément.
 
+## Correction SQL
+
+1. `SqlRunner.grade` envoie la requête de l'étudiant, la requête de référence et la liste des cas (`checks`, avec `setup` SQL éventuel).
+2. Pour chaque cas, `engine.runChecks` ouvre une transaction, applique le `setup`, exécute la référence puis la requête de l'étudiant, et annule tout (`ROLLBACK`). Les valeurs sont normalisées (dates en `AAAA-MM-JJ`, `numeric` en nombre).
+3. `grading/sql-compare.ts` compare : colonnes (nom ou position), multiensemble de lignes avec tolérance d'arrondi, puis ordre des clés de tri si l'énoncé l'exige. `describeDiff` produit l'explication (lignes manquantes / en trop, colonnes, ordre).
+4. `grading/evaluate.ts#buildSqlReport` construit le même `GradeReport` que pour Python : l'atelier, l'historique, la maîtrise et les recommandations n'ont pas de cas particulier SQL. Les erreurs PostgreSQL sont expliquées par `grading/sql-errors.ts` (SQLSTATE → titre et conseil, position → ligne/colonne).
+
+Les **visualisations SQL** n'inventent pas de lignes : `viz/SqlSteps.tsx` exécute chaque étape (FROM, WHERE, GROUP BY…) dans PostgreSQL ; `viz/JoinViz.tsx` déroule une boucle imbriquée (`viz/joinSteps.ts`, pur) dont le résultat final est comparé à PostgreSQL dans les tests.
+
 ## Modèle de données (IndexedDB `skillforge`, version 1)
 
 | Magasin | Clé | Contenu |
 |---|---|---|
-| `kv` | chaîne | `profile`, `path`, `resume` (leçon/section/exercice), `activity` (secondes actives par jour), `hints:<exercice>`, `explain:<bloc>`, `sandbox` |
+| `kv` | chaîne | `profile`, `path`, `resume` (leçon/section/exercice), `resume:project` (projet/étape), `activity` (secondes actives par jour), `hints:<exercice>`, `explain:<bloc>`, `sandbox`, `sandbox:sql`, `journal:<projet>:<étape>` |
 | `drafts` | `exerciseId` | code, `exerciseVersion`, `revision` (compteur optimiste), `updatedAt`, `tabId` |
 | `attempts` | auto | exercice + **version**, code soumis, statut, tests réussis (dont cachés), erreurs fréquentes, niveau d'aide consulté, solution vue, durée |
 | `events` | auto | ouverture de leçon, prédiction, indice, exécution, explication, diagnostic, signalement, révision |
@@ -65,7 +82,7 @@ content/ : données versionnées, importées par l'UI et par les tests
 |---|---|
 | Découvert | leçon ouverte (explicitement « ne prouve pas la maîtrise ») |
 | En pratique | au moins une tentative |
-| Démontré | exercice autonome ou test de validation réussi, tests cachés compris, sans solution affichée ni aide ciblée (niveau 3) |
-| Consolidé | Démontré + débogage réussi + révision espacée réussie |
+| Démontré | exercice autonome, test de validation ou étape de projet réussi, tests cachés compris, sans solution affichée ni aide ciblée (niveau 3). Pour une notion travaillée **uniquement** par un débogage (ex. doublons créés par les jointures), ce débogage en tient lieu. |
+| Consolidé | Démontré + débogage réussi + révision espacée réussie (révision seule si le débogage a déjà servi de preuve) |
 
 Chaque niveau est accompagné de ses raisons et de la liste des preuves (vérifiées ou auto-déclarées).

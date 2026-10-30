@@ -44,6 +44,185 @@ const implemented: Record<string, Partial<Notion>> = {
     prerequisites: ["python.a.variables-et-types", "python.a.conditions"],
     lessonIds: ["py-boucles-accumulateurs"],
   },
+  "sql.b.select-from-et-where": {
+    "status": "disponible",
+    "objective": "Écrire une requête qui sélectionne des colonnes et filtre des lignes avec des conditions combinées (AND, OR, parenthèses), et prédire le nombre de lignes obtenues.",
+    "activities": [
+        "Ordre logique d'une requête pas à pas (résultats réels)",
+        "Prédiction",
+        "Exemple exécutable",
+        "Exercice guidé",
+        "Débogage (priorité AND/OR)",
+        "Test de validation"
+    ],
+    "evaluation": "Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé.",
+    "prerequisites": [],
+    "lessonIds": [
+        "sql-requetes-select"
+    ],
+    "project": "Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown."
+},
+  "sql.b.order-by-et-limit": {
+    "status": "disponible",
+    "objective": "Trier un résultat sur une ou plusieurs clés, gérer les égalités et limiter le nombre de lignes.",
+    "activities": [
+        "Exercice autonome avec cas cachés",
+        "Test de validation (ordre vérifié)"
+    ],
+    "evaluation": "Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé.",
+    "prerequisites": [
+        "sql.b.select-from-et-where"
+    ],
+    "lessonIds": [
+        "sql-requetes-select"
+    ],
+    "project": "Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown."
+},
+  "sql.b.logique-a-trois-valeurs-avec-null": {
+    "status": "disponible",
+    "objective": "Expliquer pourquoi « = NULL » ne trouve rien et utiliser IS NULL / IS NOT NULL / COALESCE à bon escient.",
+    "activities": [
+        "Prédiction",
+        "Exercice autonome (fiches incomplètes) avec cas cachés"
+    ],
+    "evaluation": "Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé.",
+    "prerequisites": [
+        "sql.b.select-from-et-where"
+    ],
+    "lessonIds": [
+        "sql-requetes-select"
+    ],
+    "project": "Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown."
+},
+  "sql.b.agregations": {
+    "status": "disponible",
+    "objective": "Calculer des totaux, moyennes et comptages (COUNT(*) vs COUNT(colonne)) et choisir la bonne granularité.",
+    "activities": [
+        "Ordre logique avec GROUP BY et HAVING (résultats réels)",
+        "Prédiction",
+        "Exemple exécutable",
+        "Exercice guidé",
+        "Exercice autonome",
+        "Test de validation"
+    ],
+    "evaluation": "Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé.",
+    "prerequisites": [
+        "sql.b.select-from-et-where"
+    ],
+    "lessonIds": [
+        "sql-requetes-agregations"
+    ],
+    "project": "Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown."
+},
+  "sql.b.group-by-et-having": {
+    "status": "disponible",
+    "objective": "Regrouper des lignes et filtrer des groupes avec HAVING, en distinguant WHERE (lignes) de HAVING (groupes).",
+    "activities": [
+        "Débogage (WHERE vs HAVING)",
+        "Exercice autonome",
+        "Test de validation"
+    ],
+    "evaluation": "Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé.",
+    "prerequisites": [
+        "sql.b.agregations"
+    ],
+    "lessonIds": [
+        "sql-requetes-agregations"
+    ],
+    "project": "Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown."
+},
+  "sql.b.inner-join-et-left-join": {
+    "status": "disponible",
+    "objective": "Joindre deux à trois tables, choisir INNER ou LEFT JOIN et compter correctement les lignes sans correspondance.",
+    "activities": [
+        "Jointure pas à pas (INNER / LEFT)",
+        "Prédiction",
+        "Exemple exécutable",
+        "Exercice guidé",
+        "Exercice autonome",
+        "Test de validation"
+    ],
+    "evaluation": "Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé.",
+    "prerequisites": [
+        "sql.b.group-by-et-having"
+    ],
+    "lessonIds": [
+        "sql-requetes-jointures"
+    ],
+    "project": "Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown."
+},
+  "sql.b.doublons-crees-par-les-jointures": {
+    "status": "disponible",
+    "objective": "Repérer qu'une jointure multiplie des lignes avant une agrégation et corriger le calcul (agréger avant de joindre, ou sous-requête).",
+    "activities": [
+        "Débogage avec cas cachés",
+        "Discussion dans le journal du projet"
+    ],
+    "evaluation": "Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé.",
+    "prerequisites": [
+        "sql.b.inner-join-et-left-join"
+    ],
+    "lessonIds": [
+        "sql-requetes-jointures"
+    ],
+    "project": "Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown."
+},
+  "sql.d.chiffre-d-affaires": {
+    "status": "teste",
+    "objective": "Calculer un chiffre d'affaires mensuel selon une définition explicite (statuts inclus, prix facturé).",
+    "activities": [
+        "Étape du projet PME, corrigée par comparaison de résultats",
+        "Décision notée dans le journal"
+    ],
+    "evaluation": "Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé.",
+    "prerequisites": [
+        "sql.b.inner-join-et-left-join",
+        "sql.b.group-by-et-having"
+    ],
+    "project": "Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown."
+},
+  "sql.d.marge": {
+    "status": "teste",
+    "objective": "Calculer une marge brute par produit et la classer.",
+    "activities": [
+        "Étape du projet PME, corrigée par comparaison de résultats",
+        "Décision notée dans le journal"
+    ],
+    "evaluation": "Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé.",
+    "prerequisites": [
+        "sql.b.inner-join-et-left-join",
+        "sql.b.group-by-et-having"
+    ],
+    "project": "Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown."
+},
+  "sql.d.panier-moyen": {
+    "status": "teste",
+    "objective": "Calculer un panier moyen par segment à la bonne granularité (par commande).",
+    "activities": [
+        "Étape du projet PME, corrigée par comparaison de résultats",
+        "Décision notée dans le journal"
+    ],
+    "evaluation": "Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé.",
+    "prerequisites": [
+        "sql.b.inner-join-et-left-join",
+        "sql.b.group-by-et-having"
+    ],
+    "project": "Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown."
+},
+  "sql.d.suivi-de-qualite": {
+    "status": "teste",
+    "objective": "Produire des indicateurs de suivi (factures en attente, taux de retour) sans doubles comptages.",
+    "activities": [
+        "Étape du projet PME, corrigée par comparaison de résultats",
+        "Décision notée dans le journal"
+    ],
+    "evaluation": "Requête comparée à une référence par PostgreSQL (PGlite) sur les données actuelles et sur des données modifiées cachées ; l'ordre ne compte que s'il est demandé.",
+    "prerequisites": [
+        "sql.b.inner-join-et-left-join",
+        "sql.b.group-by-et-having"
+    ],
+    "project": "Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown."
+},
 };
 
 const domains: Domain[] = [
@@ -142,8 +321,8 @@ const domains: Domain[] = [
     description: "Modéliser, interroger et modifier une base relationnelle ; répondre à des questions métier précises.",
     project: {
       title: "Base de données d'une PME",
-      summary: "Clients, commandes, lignes de commande, produits, paiements et retours : conception puis requêtes métier.",
-      status: "prevu",
+      summary: "Clients, commandes, lignes de commande, produits, paiements et retours : 5 questions métier vérifiées, journal de décisions et export Markdown. La partie conception (modèle, 3FN) est prévue.",
+      status: "disponible",
     },
     plannedVisualizations: [
       "Déplacement des lignes dans une jointure",
