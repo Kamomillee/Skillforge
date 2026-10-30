@@ -1,8 +1,8 @@
-# Limites connues (étapes 1 à 5)
+# Limites connues (étapes 1 à 6)
 
 ## Contenu
-- **21 notions sont disponibles** sur 280 (Python 1, SQL 7, LLM 5, BI 4, ML 4), 6 autres sont « testées » via les projets. La matrice de couverture l'indique honnêtement.
-- Quatre projets sont jouables (SQL, ML, LLM, BI). La partie conception du projet PME est prévue ; le projet Python, le projet transversal et le mode entretien complet ne sont pas encore implémentés ; l'interface l'indique là où ils apparaissent.
+- **21 notions sont disponibles** sur 280 (Python 1, SQL 7, LLM 5, BI 4, ML 4), 10 autres sont « testées » via les projets. La matrice de couverture l'indique honnêtement.
+- Quatre projets sont jouables (SQL, ML, LLM, BI). La partie conception du projet PME est prévue ; le projet Python de domaine n'est pas encore implémenté (le projet transversal en couvre l'import et le nettoyage) ; l'interface l'indique là où ils apparaissent.
 
 ## Laboratoires de l'étape 4
 - **LLM** : aucun modèle de langage n'est appelé. La « réponse » est produite par un **modèle simulé** (extraction de la phrase la plus pertinente), signalé partout où il apparaît. Découpage, recherche, contexte, citations, abstention et évaluation sont réels. La recherche est **lexicale** (pas d'embeddings) : elle rate les synonymes et la conjugaison, ce que la leçon montre et mesure (4 silences à tort sur 13 questions).
@@ -17,6 +17,13 @@
 - **Variantes** : 4 tests de validation sur 7 en ont ; les autres révisions reprennent l'exercice d'origine.
 - Mini-test de rappel et cases de fiches : auto-évaluation, jamais comptée comme preuve.
 - Signalements : stockés dans le navigateur et inclus dans l'export ; personne ne les reçoit encore.
+
+## Projet transversal, entretien, portfolio (étape 6)
+- Les étapes 8 à 10 du projet transversal sont **rédigées**, pas corrigées : elles sont « rédigées » quand leurs champs sont remplis, jamais « vérifiées ».
+- Le tableau de bord se construit dans un outil externe (Power BI, Excel…) : SkillForge vérifie les indicateurs source en SQL, pas l'affichage.
+- Mode entretien : les réponses écrites sont relues par **repères textuels** (mots ou expressions attendus). C'est une aide à la relecture : une idée formulée autrement peut ne pas être repérée. Les critères ne produisent aucune note.
+- Les sessions d'entretien, le portfolio et les rédactions restent dans le navigateur (inclus dans l'export des données) ; pas de partage en ligne avant les comptes (étape 7).
+- L'attestation est interne au parcours : elle n'a aucune valeur de certification.
 
 ## Exécution Python (navigateur)
 - **Mémoire** : pas de limite fine ; seule celle du navigateur s'applique (WebAssembly 32 bits, 4 Go max). Un programme qui alloue énormément peut faire planter le worker ; il est alors recréé.

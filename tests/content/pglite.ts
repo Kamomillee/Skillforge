@@ -1,7 +1,7 @@
 import { PGlite } from "@electric-sql/pglite";
 import { runChecks, runQuery, seedPme } from "../../src/runtime/sql/engine";
 import { buildSqlReport } from "../../src/grading/evaluate";
-import type { SqlExercise } from "../../src/content/types";
+import { checkSpecs, type SqlExercise } from "../../src/content/types";
 
 let db: Promise<PGlite> | null = null;
 
@@ -17,7 +17,7 @@ export function getDb() {
 
 export async function gradeSql(ex: SqlExercise, code: string) {
   const d = await getDb();
-  const outcomes = await runChecks(d, code, ex.referenceSolution, ex.checks.map((c) => ({ id: c.id, setup: c.setup })));
+  const outcomes = await runChecks(d, code, ex.referenceSolution, checkSpecs(ex));
   return buildSqlReport(ex, outcomes, 0, code);
 }
 

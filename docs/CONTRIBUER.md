@@ -32,6 +32,11 @@
 
 ## Un projet
 - Objet `Project` (`src/content/types.ts`) : mandat, livrables, critères d'acceptation, étapes → `exerciseId` (`kind: "project"`) + question du journal de décisions. L'enregistrer dans `projects` (`src/content/index.ts`) ; la page `#/projet/<id>` et l'export Markdown sont génériques.
+- Étape de **rédaction** : `kind: "redaction"` et `fields` (pas d'`exerciseId`) ; enregistrée, exportée, reprise dans le portfolio, jamais notée. `evaluation: true` affiche le tableau d'évaluation calculé depuis les preuves (`src/domain/projects.ts`).
+- Projet **transversal** : `domains` liste les domaines ; un exercice SQL peut déclarer `setup` (SQL exécuté avant chaque exécution et vérification, par exemple une table temporaire d'import).
+
+## Une question d'entretien
+- `src/content/entretien.ts` : question écrite (`kind: "texte"`, éléments attendus avec leurs repères, longueur visée, réponse modèle) ou de code (`kind: "code"`, un exercice complet avec tests cachés). Le test `tests/unit/entretien-portfolio.test.ts` exige que la réponse modèle contienne tous ses propres repères ; `tests/content/transversal.test.ts` exécute la réponse modèle des questions de code.
 
 ## Jeux de données
 - Générés de façon déterministe dans `src/content/datasets/` (graine fixe), documentés dans [DONNEES.md](DONNEES.md) avec leur provenance et leurs anomalies volontaires. `tests/content/sql.test.ts` vérifie les invariants dont dépendent les exercices (clients sans commande, NULL, produit jamais vendu…).

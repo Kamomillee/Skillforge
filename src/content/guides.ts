@@ -153,6 +153,30 @@ export const misconceptionGuides: Record<string, MisconceptionGuide> = {
     explication: "Le dénominateur d'une part doit être calculé avec les mêmes filtres que le numérateur, sauf celui qu'on retire volontairement (ALL).",
     question: "Quels filtres (année, statut, segment) s'appliquent à ton dénominateur ? Lesquels devraient s'appliquer ?",
   },
+  "type-non-converti": {
+    explication: "Tout ce qu'on lit dans un fichier texte est du texte : \"2\" n'est pas 2, et float(\"12,50\") échoue à cause de la virgule. Il faut convertir explicitement chaque colonne.",
+    question: "Affiche type() de chaque valeur d'une ligne lue : lesquelles sont encore des str ?",
+    exemple: { language: "python", faux: 'quantite = morceaux[4]          # "2"', juste: 'quantite = int(morceaux[4])\nprix = float(morceaux[5].replace(",", "."))' },
+  },
+  "doublon-garde": {
+    explication: "Un doublon exact est une ligne déjà vue : il faut mémoriser les lignes conservées (un ensemble de tuples) et compter chaque répétition comme rejet.",
+    question: "Si la même ligne apparaît trois fois, combien en gardes-tu, et combien de doublons comptes-tu ?",
+    exemple: { language: "python", faux: "propres = lignes  # rien n'est retiré", juste: "vues = set()\nfor l in lignes:\n    cle = tuple(l.values())\n    if cle in vues:\n        doublons += 1\n    else:\n        vues.add(cle)\n        propres.append(l)" },
+  },
+  "date-non-validee": {
+    explication: "Avoir la forme AAAA-MM-JJ ne suffit pas : le 31 avril n'existe pas. Seule une vraie conversion (datetime.strptime) vérifie que la date existe.",
+    question: "Ton contrôle accepte-t-il \"2026-04-31\" ? Essaie-le.",
+  },
+  "ligne-orpheline": {
+    explication: "Une ligne qui référence un client inconnu violerait la clé étrangère : il faut l'écarter (jointure interne ou EXISTS) et la signaler, pas l'insérer.",
+    question: "Que devient une ligne dont le client n'est pas dans la table clients, avec ta jointure ?",
+    exemple: { language: "sql", faux: "FROM import_ventes i LEFT JOIN clients c ON c.client_id = i.client_id", juste: "FROM import_ventes i JOIN clients c ON c.client_id = i.client_id" },
+  },
+  reimport: {
+    explication: "Un import se relance (fichier renvoyé, tâche rejouée) : il doit ignorer ce qui est déjà en base, sinon il crée des doublons.",
+    question: "Si l'on relance ton import demain avec le même fichier, que se passe-t-il pour les commandes déjà créées ?",
+    exemple: { language: "sql", faux: "SELECT ... FROM import_ventes i", juste: "SELECT ... FROM import_ventes i\nWHERE NOT EXISTS (SELECT 1 FROM commandes c WHERE c.commande_id = i.commande)" },
+  },
 };
 
 export interface Fiche {

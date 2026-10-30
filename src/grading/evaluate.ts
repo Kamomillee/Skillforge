@@ -133,6 +133,8 @@ export function sqlMisconceptionHint(code: string, fallback?: string): string | 
   const sql = code.replace(/--[^\n]*/g, " ").replace(/\s+/g, " ");
   const hasLeft = /\bLEFT\s+(OUTER\s+)?JOIN\b/i.test(sql);
   if (/(=|<>|!=)\s*NULL\b/i.test(sql)) return "null-egalite";
+  // Une ligne orpheline gardée vient justement du LEFT JOIN : le COUNT(*) n'y est pour rien.
+  if (fallback === "ligne-orpheline") return fallback;
   if (hasLeft && /COUNT\s*\(\s*\*\s*\)/i.test(sql)) return "count-etoile-left";
   if (fallback === "inner-au-lieu-de-left" && hasLeft) return undefined;
   if (fallback === "count-etoile-left" && !/COUNT\s*\(\s*\*\s*\)/i.test(sql)) return undefined;

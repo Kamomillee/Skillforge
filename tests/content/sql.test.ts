@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { lessons, sqlExercises, exerciseById } from "../../src/content";
-import type { SqlExercise } from "../../src/content/types";
+import { checkSpecs, type SqlExercise } from "../../src/content/types";
 import { joinVizData } from "../../src/content/sql/jointures";
 import { compareResults } from "../../src/grading/sql-compare";
 import { joinSteps } from "../../src/ui/viz/joinSteps";
@@ -8,9 +8,20 @@ import { generatePme } from "../../src/content/datasets/pme";
 import { getDb, gradeSql, q } from "./pglite";
 
 const ex = (id: string) => exerciseById.get(id) as SqlExercise;
+const ref = (id: string) => ex(id).referenceSolution;
 
 /** Erreurs typiques : chacune doit échouer, idéalement avec la bonne étiquette d'erreur. */
 const WRONG: Record<string, { sql: string; misconception?: string; label: string }[]> = {
+  // Projet transversal (erreurs typiques sur les étapes SQL du copilote).
+  "cp-3-base": [
+    { label: "LEFT JOIN : le client inconnu passe", sql: ref("cp-3-base").replace("JOIN clients", "LEFT JOIN clients"), misconception: "ligne-orpheline" },
+    { label: "sans NOT EXISTS : réimport en double", sql: ref("cp-3-base").replace(/WHERE NOT EXISTS \(.*\)\n/, ""), misconception: "reimport" },
+  ],
+  "cp-4-questions": [
+    { label: "COUNT sans DISTINCT", sql: ref("cp-4-questions").replace("COUNT(DISTINCT c.client_id)", "COUNT(c.client_id)"), misconception: "jointure-doublons" },
+    { label: "statut oublié", sql: ref("cp-4-questions").replace("c.statut <> 'annulee' AND ", ""), misconception: "statut-annule" },
+  ],
+  "cp-5-tableau": [{ label: "panier divisé par COUNT(*)", sql: ref("cp-5-tableau").replaceAll("COUNT(DISTINCT c.commande_id)", "COUNT(*)"), misconception: "jointure-doublons" }],
   "sql-select-ex1-produits-chers": [
     { label: ">= au lieu de >", sql: "SELECT produit_id, nom, prix_unitaire FROM produits WHERE prix_unitaire >= 40 ORDER BY prix_unitaire DESC", misconception: "condition-inversee" },
     { label: "tri croissant", sql: "SELECT produit_id, nom, prix_unitaire FROM produits WHERE prix_unitaire > 40 ORDER BY prix_unitaire", misconception: "ordre-tri" },
@@ -114,9 +125,9 @@ describe("exercices SQL", () => {
       expect((await gradeSql(e, e.starterCode)).status).not.toBe("passed");
     });
     it(`${e.id} : chaque cas caché a un rôle (une erreur typique y échoue, ou le résultat attendu change)`, async () => {
-      const base = await q(e.referenceSolution);
+      const base = await q(e.referenceSolution, e.setup);
       const wrongs = (WRONG[e.id] ?? []).map((w) => (w.sql === "" ? e.starterCode : w.sql));
-      for (const c of e.checks.filter((c) => c.hidden)) {
+      for (const c of checkSpecs(e).filter((c) => e.checks.find((x) => x.id === c.id)!.hidden)) {
         const withSetup = await q(e.referenceSolution, c.setup);
         const changes = compareResults(base, withSetup, { columnMode: "names", tolerance: e.tolerance }).kind !== "ok";
         let caught = false;

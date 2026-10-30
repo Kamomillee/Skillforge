@@ -1,4 +1,4 @@
-import type { SqlExercise } from "../../content/types";
+import { checkSpecs, type SqlExercise } from "../../content/types";
 import { buildSqlReport, type GradeReport } from "../../grading/evaluate";
 import type { QueryOutcome, SchemaTable } from "./engine";
 import type { FromSqlWorker, ToSqlWorker } from "./protocol";
@@ -115,8 +115,8 @@ export class SqlRunner {
     return { reply, stopped, durationMs: Math.round(performance.now() - started) };
   }
 
-  async query(sql: string, timeoutMs = 8000, maxRows = 500): Promise<{ status: "ok" | "timeout" | "interrupted" | "error"; outcome?: QueryOutcome; message?: string }> {
-    const { reply, stopped } = await this.send({ type: "query", sql, maxRows }, timeoutMs, "Exécution de la requête…");
+  async query(sql: string, timeoutMs = 8000, maxRows = 500, setup?: string): Promise<{ status: "ok" | "timeout" | "interrupted" | "error"; outcome?: QueryOutcome; message?: string }> {
+    const { reply, stopped } = await this.send({ type: "query", sql, maxRows, setup }, timeoutMs, "Exécution de la requête…");
     if (stopped || !reply) return { status: stopped ?? "interrupted" };
     if (reply.type === "fatal") return { status: "error", message: reply.message };
     if (reply.type !== "query-done") return { status: "error", message: "Réponse inattendue." };
@@ -125,7 +125,7 @@ export class SqlRunner {
 
   async grade(ex: SqlExercise, code: string): Promise<GradeReport> {
     const { reply, stopped, durationMs } = await this.send(
-      { type: "checks", student: code, reference: ex.referenceSolution, checks: ex.checks.map((c) => ({ id: c.id, setup: c.setup })) },
+      { type: "checks", student: code, reference: ex.referenceSolution, checks: checkSpecs(ex) },
       ex.timeLimitMs,
       "Vérification sur les données de test…",
     );

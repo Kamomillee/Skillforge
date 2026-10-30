@@ -44,16 +44,16 @@ export function LessonsPage() {
                   );
                 })}
                 {ps.map((p) => {
-                  const done = p.steps.filter((s) => passed(s.exerciseId)).length;
+                  const done = p.steps.filter((s) => s.exerciseId && passed(s.exerciseId)).length;
                   return (
                     <a key={p.id} className="panel card-link" href={projectHref(p.id)} data-testid={`project-card-${p.id}`}>
-                      <div className="eyebrow">Projet</div>
+                      <div className="eyebrow">{p.domains ? "Projet transversal" : "Projet"}</div>
                       <strong>{p.title}</strong>
                       <p className="small muted" style={{ margin: "6px 0" }}>
                         {p.summary}
                       </p>
                       <span className="small">
-                        {done}/{p.steps.length} étapes vérifiées
+                        {done}/{p.steps.filter((s) => s.exerciseId).length} étapes vérifiées
                       </span>
                     </a>
                   );

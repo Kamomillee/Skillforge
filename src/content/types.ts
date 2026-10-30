@@ -114,6 +114,8 @@ export const sqlExerciseSchema = z.object({
   title: z.string(),
   prompt: z.string(),
   dataset: z.literal("pme"),
+  /** SQL exécuté avant chaque exécution et chaque vérification (ex. table d'import temporaire), dans la transaction annulée. */
+  setup: z.string().optional(),
   starterCode: z.string(),
   referenceSolution: z.string(),
   /** L'ordre des lignes n'est vérifié que si l'énoncé l'exige ; il porte alors sur ces colonnes. */
@@ -128,6 +130,9 @@ export const sqlExerciseSchema = z.object({
   timeLimitMs: z.number().int().positive().default(8000),
 });
 export type SqlExercise = z.infer<typeof sqlExerciseSchema>;
+
+/** Préparation de chaque vérification : préparation commune de l'exercice, puis celle de la vérification. */
+export const checkSpecs = (ex: SqlExercise) => ex.checks.map((c) => ({ id: c.id, setup: [ex.setup, c.setup].filter(Boolean).join(";\n") || undefined }));
 
 export type Exercise = PythonExercise | SqlExercise;
 
@@ -167,6 +172,12 @@ export const misconceptionLabels: Record<string, string> = {
   "casse-ponctuation": "Mots comparés sans normaliser la casse ou la ponctuation",
   // BI
   "contexte-denominateur": "Dénominateur calculé dans un autre contexte de filtre (année, statut ou segment)",
+  // Projet transversal
+  "type-non-converti": "Valeurs lues comme du texte, sans conversion (nombres, décimales à virgule, espaces)",
+  "doublon-garde": "Doublon conservé ou mal compté",
+  "date-non-validee": "Date acceptée sans vérifier qu'elle existe",
+  "ligne-orpheline": "Ligne qui référence un client ou un produit inconnu",
+  "reimport": "Import rejoué qui crée des doublons",
 };
 
 // ---------- Leçons ----------
@@ -320,15 +331,23 @@ export type SqlExerciseInput = z.input<typeof sqlExerciseSchema>;
 export interface ProjectStep {
   id: string;
   title: string;
-  exerciseId: string;
+  /** Étape vérifiée : l'exercice (de type projet) à réussir. Absent pour une étape de rédaction. */
+  exerciseId?: string;
+  /** « redaction » : étape écrite, enregistrée mais jamais notée automatiquement. */
+  kind?: "exercice" | "redaction";
+  /** Champs à rédiger (étape de rédaction). */
+  fields?: { id: string; label: string }[];
+  /** Affiche le tableau d'évaluation calculé depuis les preuves du projet. */
+  evaluation?: boolean;
   /** Question posée pour le journal de décisions de cette étape. */
   decisionPrompt: string;
 }
-
 export interface Project {
   id: string;
   version: number;
+  /** Domaine principal (bac à sable par défaut) ; `domains` liste tous les domaines d'un projet transversal. */
   domain: DomainId;
+  domains?: DomainId[];
   title: string;
   summary: string;
   brief: string;

@@ -12,6 +12,8 @@ import { LessonsPage } from "./pages/LessonsPage";
 import { ProjectPage } from "./pages/ProjectPage";
 import { SkillMap } from "./pages/SkillMap";
 import { Notebook } from "./pages/Notebook";
+import { Interview } from "./pages/Interview";
+import { Portfolio } from "./pages/Portfolio";
 
 /** Mesure du temps actif : page visible ET interaction dans la dernière minute. */
 function useActivityTracker() {
@@ -41,6 +43,8 @@ export function App() {
     { href: "#/lecons", label: "Leçons", name: "lecons" },
     { href: "#/carte", label: "Carte", name: "carte" },
     { href: "#/carnet", label: "Carnet", name: "carnet" },
+    { href: "#/entretien", label: "Entretien", name: "entretien" },
+    { href: "#/portfolio", label: "Portfolio", name: "portfolio" },
     { href: "#/programme", label: "Programme", name: "programme" },
     { href: "#/parametres", label: "Paramètres", name: "parametres" },
   ];
@@ -71,6 +75,12 @@ export function App() {
     case "carnet":
       page = <Notebook route={route} />;
       break;
+    case "entretien":
+      page = <Interview route={route} />;
+      break;
+    case "portfolio":
+      page = <Portfolio />;
+      break;
     case "programme":
       page = <Curriculum />;
       break;
@@ -90,7 +100,7 @@ export function App() {
   }
 
   useEffect(() => {
-    const titles: Record<string, string> = { tableau: "Tableau de bord", lecon: "Leçon", programme: "Programme", parametres: "Paramètres", onboarding: "Mon parcours", revision: "Révision", lecons: "Leçons", projet: "Projet", carte: "Carte des compétences", carnet: "Carnet" };
+    const titles: Record<string, string> = { tableau: "Tableau de bord", lecon: "Leçon", programme: "Programme", parametres: "Paramètres", onboarding: "Mon parcours", revision: "Révision", lecons: "Leçons", projet: "Projet", carte: "Carte des compétences", carnet: "Carnet", entretien: "Entretien", portfolio: "Portfolio" };
     document.title = titles[route.name] ? `${titles[route.name]} · SkillForge AI` : "SkillForge AI";
   }, [route.name]);
 

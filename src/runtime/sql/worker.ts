@@ -27,7 +27,7 @@ self.onmessage = async (ev: MessageEvent<ToSqlWorker>) => {
       return;
     }
     if (!db) return post({ type: "fatal", id: m.id, message: "Base non initialisée." });
-    if (m.type === "query") post({ type: "query-done", id: m.id, outcome: await runQuery(db, m.sql, m.maxRows) });
+    if (m.type === "query") post({ type: "query-done", id: m.id, outcome: await runQuery(db, m.sql, m.maxRows, m.setup) });
     else if (m.type === "checks") post({ type: "checks-done", id: m.id, outcomes: await runChecks(db, m.student, m.reference, m.checks) });
     else if (m.type === "schema") post({ type: "schema-done", id: m.id, tables: await describeSchema(db) });
     else if (m.type === "reset") {

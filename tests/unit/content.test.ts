@@ -23,8 +23,11 @@ describe("matrice de couverture", () => {
     for (const l of lessons) for (const c of l.conceptIds) expect(notions.get(c)?.status, `${l.id} → ${c}`).toBe("disponible");
   });
 
-  it("chaque étape de projet pointe vers un exercice de type projet", () => {
-    for (const p of projects) for (const s of p.steps) expect(exercises.find((e) => e.id === s.exerciseId)?.kind, `${p.id}/${s.id}`).toBe("project");
+  it("chaque étape de projet pointe vers un exercice de type projet, ou est une rédaction avec des champs", () => {
+    for (const p of projects)
+      for (const s of p.steps)
+        if (s.kind === "redaction") expect(s.fields?.length && !s.exerciseId, `${p.id}/${s.id}`).toBeTruthy();
+        else expect(exercises.find((e) => e.id === s.exerciseId)?.kind, `${p.id}/${s.id}`).toBe("project");
   });
 });
 

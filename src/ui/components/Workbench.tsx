@@ -85,7 +85,7 @@ export function Workbench({
     setTab("console");
     if (ex.language === "sql") {
       setOut({ kind: "sql", status: "running" });
-      const r = await sqlRunner.query(draft.code, ex.timeLimitMs);
+      const r = await sqlRunner.query(draft.code, ex.timeLimitMs, 500, ex.setup);
       const status = r.status === "ok" && r.outcome && !r.outcome.ok ? "error" : r.status;
       setOut({ kind: "sql", status, outcome: r.outcome, message: r.message });
       void store.addEvent({ type: "run", exerciseId: attemptKey, lessonId: lesson?.id, data: { status, errorType: r.outcome && !r.outcome.ok ? r.outcome.error.code : undefined } });

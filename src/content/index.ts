@@ -7,15 +7,16 @@ import { exercisesProjetPme, projetPme } from "./sql/projet-pme";
 import { exercisesMlEvaluation, exercisesProjetChurn, lessonMlEvaluation, projetChurn } from "./ml/evaluation";
 import { exercisesProjetRag, exercisesRag, lessonRag, projetAssistant } from "./llm/rag";
 import { exercisesBiMesures, exercisesProjetBi, lessonBiMesures, projetBi } from "./bi/mesures";
+import { exercisesCopilotePy, exercisesCopiloteSql, projetCopilote } from "./transversal/copilote";
 
 export * from "./types";
 export { curriculum, domainById, allNotions, moduleById, coverageStats, moduleDependencies } from "./curriculum";
 
 export const lessons: Lesson[] = [lessonBoucles, lessonSelect, lessonAgregations, lessonJointures, lessonMlEvaluation, lessonRag, lessonBiMesures];
-export const projects: Project[] = [projetPme, projetChurn, projetAssistant, projetBi];
+export const projects: Project[] = [projetPme, projetChurn, projetAssistant, projetBi, projetCopilote];
 export const exercises: Exercise[] = [
-  ...[...exercisesBoucles, ...exercisesMlEvaluation, ...exercisesProjetChurn, ...exercisesRag, ...exercisesProjetRag].map((e) => pythonExerciseSchema.parse(e)),
-  ...[...exercisesSelect, ...exercisesAgregations, ...exercisesJointures, ...exercisesProjetPme, ...exercisesBiMesures, ...exercisesProjetBi].map((e) => sqlExerciseSchema.parse(e)),
+  ...[...exercisesBoucles, ...exercisesMlEvaluation, ...exercisesProjetChurn, ...exercisesRag, ...exercisesProjetRag, ...exercisesCopilotePy].map((e) => pythonExerciseSchema.parse(e)),
+  ...[...exercisesSelect, ...exercisesAgregations, ...exercisesJointures, ...exercisesProjetPme, ...exercisesBiMesures, ...exercisesProjetBi, ...exercisesCopiloteSql].map((e) => sqlExerciseSchema.parse(e)),
 ];
 
 export const lessonById = new Map(lessons.map((l) => [l.id, l]));

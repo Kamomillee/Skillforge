@@ -7,12 +7,12 @@
 
 | Domaine | Notions | Prévu | Rédigé | Implémenté | Testé | Disponible | Projet |
 |---|---|---|---|---|---|---|---|
-| Python | 58 | 57 | 0 | 0 | 0 | 1 | Pipeline d'import, nettoyage et contrôle qualité (Prévu) |
-| SQL | 50 | 39 | 0 | 0 | 4 | 7 | Base de données d'une PME (Disponible) |
+| Python | 58 | 55 | 0 | 0 | 2 | 1 | Pipeline d'import, nettoyage et contrôle qualité (Prévu) |
+| SQL | 50 | 38 | 0 | 0 | 5 | 7 | Base de données d'une PME (Disponible) |
 | LLM | 69 | 64 | 0 | 0 | 0 | 5 | Assistant documentaire avec citations (Disponible) |
 | BI | 48 | 42 | 0 | 0 | 2 | 4 | Rapport ventes, marges et retours (Disponible) |
-| ML | 55 | 51 | 0 | 0 | 0 | 4 | Prédiction du départ de clients (Disponible) |
-| **Total** | **280** | 253 | 0 | 0 | 6 | 21 | Projet transversal : copilote data PME (Prévu) |
+| ML | 55 | 50 | 0 | 0 | 1 | 4 | Prédiction du départ de clients (Disponible) |
+| **Total** | **280** | 249 | 0 | 0 | 10 | 21 | Projet transversal : copilote data PME (Prévu) |
 
 ## Python pour les données et l'automatisation
 
@@ -52,10 +52,10 @@ Visualisations prévues : Évolution des variables pendant une boucle · Référ
 | C. NumPy et pandas | Opérations vectorisées | Prévu | — | — | — | Pipeline d'import, nettoyage et contrôle qualité |
 | C. NumPy et pandas | Indexation | Prévu | — | — | — | Pipeline d'import, nettoyage et contrôle qualité |
 | C. NumPy et pandas | Series et DataFrame | Prévu | — | — | — | Pipeline d'import, nettoyage et contrôle qualité |
-| C. NumPy et pandas | Chargement CSV, Excel et JSON | Prévu | — | — | — | Pipeline d'import, nettoyage et contrôle qualité |
+| C. NumPy et pandas | Chargement CSV, Excel et JSON | Testé | Lire un export CSV (séparateur ; et décimales à virgule) et convertir chaque colonne dans le bon type. | Étape du projet transversal « Copilote data pour une PME », vérifiée par exécution, Décision notée dans le journal | Tests exécutés réellement (Pyodide pour Python, PostgreSQL pour SQL), avec cas cachés. | Copilote data pour une PME (projet transversal). |
 | C. NumPy et pandas | Sélection et filtrage | Prévu | — | — | — | Pipeline d'import, nettoyage et contrôle qualité |
 | C. NumPy et pandas | Données manquantes | Prévu | — | — | — | Pipeline d'import, nettoyage et contrôle qualité |
-| C. NumPy et pandas | Doublons | Prévu | — | — | — | Pipeline d'import, nettoyage et contrôle qualité |
+| C. NumPy et pandas | Doublons | Testé | Contrôler un jeu de lignes (dates, quantités, doublons) et compter les rejets par motif. | Étape du projet transversal « Copilote data pour une PME », vérifiée par exécution, Décision notée dans le journal | Tests exécutés réellement (Pyodide pour Python, PostgreSQL pour SQL), avec cas cachés. | Copilote data pour une PME (projet transversal). |
 | C. NumPy et pandas | Conversions de types | Prévu | — | — | — | Pipeline d'import, nettoyage et contrôle qualité |
 | C. NumPy et pandas | Colonnes calculées | Prévu | — | — | — | Pipeline d'import, nettoyage et contrôle qualité |
 | C. NumPy et pandas | groupby et agrégations | Prévu | — | — | — | Pipeline d'import, nettoyage et contrôle qualité |
@@ -91,7 +91,7 @@ Visualisations prévues : Déplacement des lignes dans une jointure · Résultat
 | A. Modèle relationnel | Cardinalités | Prévu | — | — | — | Base de données d'une PME |
 | A. Modèle relationnel | Contraintes | Prévu | — | — | — | Base de données d'une PME |
 | A. Modèle relationnel | Valeurs NULL | Prévu | — | — | — | Base de données d'une PME |
-| A. Modèle relationnel | Intégrité référentielle | Prévu | — | — | — | Base de données d'une PME |
+| A. Modèle relationnel | Intégrité référentielle | Testé | Préparer un import qui respecte les clés étrangères et reste rejouable sans doublon. | Étape du projet transversal « Copilote data pour une PME », vérifiée par exécution, Décision notée dans le journal | Tests exécutés réellement (Pyodide pour Python, PostgreSQL pour SQL), avec cas cachés. | Copilote data pour une PME (projet transversal). |
 | A. Modèle relationnel | Modèles entité-association | Prévu | — | — | — | Base de données d'une PME |
 | A. Modèle relationnel | Normalisation jusqu'à la 3FN | Prévu | — | — | — | Base de données d'une PME |
 | A. Modèle relationnel | Arbitrages de dénormalisation | Prévu | — | — | — | Base de données d'une PME |
@@ -298,7 +298,7 @@ Visualisations prévues : Droite de régression manipulable · Frontière de dé
 | C. Modèles | Régression linéaire | Prévu | — | — | — | Prédiction du départ de clients |
 | C. Modèles | Régression logistique | Prévu | — | — | — | Prédiction du départ de clients |
 | C. Modèles | k plus proches voisins | Prévu | — | — | — | Prédiction du départ de clients |
-| C. Modèles | Arbres | Prévu | — | — | — | Prédiction du départ de clients |
+| C. Modèles | Arbres | Testé | Entraîner une règle à un seuil (arbre de profondeur 1) et la comparer à une base honnête sur des données non vues. | Étape du projet transversal « Copilote data pour une PME », vérifiée par exécution, Décision notée dans le journal | Tests exécutés réellement (Pyodide pour Python, PostgreSQL pour SQL), avec cas cachés. | Copilote data pour une PME (projet transversal). |
 | C. Modèles | Forêts aléatoires | Prévu | — | — | — | Prédiction du départ de clients |
 | C. Modèles | Gradient boosting | Prévu | — | — | — | Prédiction du départ de clients |
 | C. Modèles | K-means | Prévu | — | — | — | Prédiction du départ de clients |

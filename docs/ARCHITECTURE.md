@@ -94,6 +94,13 @@ Les **visualisations SQL** n'inventent pas de lignes : `viz/SqlSteps.tsx` exécu
 - `ui/components/TutorPanel.tsx`, `ui/components/Personal.tsx` (favori, notes, fiche), `ui/pages/Notebook.tsx` (`#/carnet/erreurs|favoris|notes|fiches`).
 - `server/` : `tuteur.ts` (validation, prompts, limites, fournisseur simulé — sans réseau), `claude.ts` (SDK officiel), `main.ts` (HTTP, fichiers statiques). Le navigateur détecte le serveur via `/api/sante`.
 
+## Projet transversal, entretien, portfolio (étape 6)
+
+- `content/transversal/copilote.ts` (exercices, projet, miroirs TypeScript), `content/datasets/import-boutique.ts` (export CSV et table d'import).
+- `domain/projects.ts` : statut d'une étape (vérifiée / rédigée), clés du journal et des rédactions, tableau d'évaluation calculé depuis les tentatives.
+- `content/entretien.ts` (banque de questions, profils), `domain/interview.ts` (correction en 5 critères, export Markdown), `ui/pages/Interview.tsx` (`#/entretien`, `#/entretien/session`, `#/entretien/bilan/<id>` ; session en cours dans `kv` `entretien:en-cours`, sessions terminées dans `entretien:sessions`).
+- `domain/portfolio.ts` + `ui/pages/Portfolio.tsx` (`#/portfolio`) : portfolio recalculé à chaque ouverture, exports README et JSON.
+
 ## Modèle de données (IndexedDB `skillforge`, version 1)
 
 | Magasin | Clé | Contenu |

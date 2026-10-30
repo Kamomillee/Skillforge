@@ -67,7 +67,9 @@ export type EventType =
   | "project-export"
   | "activity"
   | "tutor"
-  | "recall";
+  | "recall"
+  | "interview"
+  | "portfolio-export";
 
 export interface LearningEvent {
   id?: number;

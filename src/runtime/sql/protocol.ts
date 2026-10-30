@@ -2,7 +2,7 @@ import type { CheckOutcome, CheckSpec, QueryOutcome, SchemaTable } from "./engin
 
 export type ToSqlWorker =
   | { type: "init"; id: number }
-  | { type: "query"; id: number; sql: string; maxRows: number }
+  | { type: "query"; id: number; sql: string; maxRows: number; setup?: string }
   | { type: "checks"; id: number; student: string; reference: string; checks: CheckSpec[] }
   | { type: "schema"; id: number }
   | { type: "reset"; id: number };

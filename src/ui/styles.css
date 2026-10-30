@@ -342,6 +342,7 @@ legend {
 .shell {
   display: grid;
   grid-template-rows: auto 1fr;
+  grid-template-columns: minmax(0, 1fr);
   height: 100%;
 }
 .topbar {
@@ -1964,4 +1965,36 @@ table.result {
 .tutor-ai-toggle input {
   margin-top: 3px;
   flex: none;
+}
+.criteria {
+  display: grid;
+  grid-template-columns: minmax(140px, max-content) 1fr;
+  gap: 6px 16px;
+  margin: 0 0 12px;
+}
+.criteria dt {
+  font-weight: 650;
+}
+.criteria dd {
+  margin: 0;
+}
+@media (max-width: 560px) {
+  .criteria {
+    grid-template-columns: 1fr;
+  }
+  .criteria dd {
+    margin-bottom: 6px;
+  }
+}
+.interview-editor .editor-wrap {
+  min-height: 180px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.portfolio-entry {
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+.portfolio-entry h2 {
+  margin-top: 0;
 }

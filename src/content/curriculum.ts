@@ -455,6 +455,38 @@ const implemented: Record<string, Partial<Notion>> = {
     "evaluation": "Requêtes SQL comparées à une référence par PostgreSQL (PGlite), y compris sur données modifiées cachées ; le DAX est affiché sans être exécuté.",
     "project": "Rapport ventes, marges et retours (projet BI) : chiffres de référence vérifiés en SQL ; rapport Power BI Desktop en auto-évaluation."
 },
+  "python.c.chargement-csv-excel-et-json": {
+    status: "teste",
+    objective: "Lire un export CSV (séparateur ; et décimales à virgule) et convertir chaque colonne dans le bon type.",
+    activities: ["Étape du projet transversal « Copilote data pour une PME », vérifiée par exécution", "Décision notée dans le journal"],
+    evaluation: "Tests exécutés réellement (Pyodide pour Python, PostgreSQL pour SQL), avec cas cachés.",
+    prerequisites: ["python.a.boucles"],
+    project: "Copilote data pour une PME (projet transversal).",
+  },
+  "python.c.doublons": {
+    status: "teste",
+    objective: "Contrôler un jeu de lignes (dates, quantités, doublons) et compter les rejets par motif.",
+    activities: ["Étape du projet transversal « Copilote data pour une PME », vérifiée par exécution", "Décision notée dans le journal"],
+    evaluation: "Tests exécutés réellement (Pyodide pour Python, PostgreSQL pour SQL), avec cas cachés.",
+    prerequisites: ["python.c.chargement-csv-excel-et-json"],
+    project: "Copilote data pour une PME (projet transversal).",
+  },
+  "sql.a.integrite-referentielle": {
+    status: "teste",
+    objective: "Préparer un import qui respecte les clés étrangères et reste rejouable sans doublon.",
+    activities: ["Étape du projet transversal « Copilote data pour une PME », vérifiée par exécution", "Décision notée dans le journal"],
+    evaluation: "Tests exécutés réellement (Pyodide pour Python, PostgreSQL pour SQL), avec cas cachés.",
+    prerequisites: ["sql.b.inner-join-et-left-join"],
+    project: "Copilote data pour une PME (projet transversal).",
+  },
+  "ml.c.arbres": {
+    status: "teste",
+    objective: "Entraîner une règle à un seuil (arbre de profondeur 1) et la comparer à une base honnête sur des données non vues.",
+    activities: ["Étape du projet transversal « Copilote data pour une PME », vérifiée par exécution", "Décision notée dans le journal"],
+    evaluation: "Tests exécutés réellement (Pyodide pour Python, PostgreSQL pour SQL), avec cas cachés.",
+    prerequisites: [],
+    project: "Copilote data pour une PME (projet transversal).",
+  },
   "bi.c.comparaisons-temporelles": {
     "status": "teste",
     "objective": "Calculer une évolution d'une année sur l'autre à périmètre de dates identique.",

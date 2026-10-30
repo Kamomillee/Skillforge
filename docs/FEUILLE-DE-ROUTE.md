@@ -7,16 +7,22 @@
 | 3 | Architecture des cinq domaines : carte des compétences (zoom, filtres, vue locale), composants pédagogiques réutilisables (classement, association, code à compléter, interprétation de graphique) | **Terminée** (30/10/2026) |
 | 4 | Laboratoires ML (scikit-learn dans Pyodide, seuil et coût métier), LLM (RAG avec citations et abstention, modèle **simulé** annoncé), BI (contexte de filtre calculé en SQL, DAX affiché, parcours Power BI Desktop en auto-évaluation) et leurs trois projets | **Terminée** (30/10/2026) — fournisseur LLM réel reporté à l'étape 5 (nécessite le serveur) |
 | 5 | Tuteur contextuel (7 modes, 4 niveaux, local sans IA + Claude en option via un serveur minimal), carnet d'erreurs, favoris, notes, fiches avec mini-test de rappel, variantes paramétrées des tests de validation pour la révision | **Terminée** (30/10/2026) — génération du laboratoire RAG par un vrai modèle encore simulée |
-| 6 | Projet transversal « copilote data PME », mode entretien, portfolio exportable | À faire |
+| 6 | Projet transversal « Copilote data pour une PME » (10 étapes : 7 vérifiées, 3 rédigées, tableau d'évaluation mesuré), mode entretien (4 profils, 8 formats, correction en 5 critères après la session), portfolio généré depuis les preuves (README, JSON, ligne de CV, attestation interne) | **Terminée** (30/10/2026) |
 | 7 | Comptes, isolation, quotas, administration des contenus, audit d'accessibilité, observabilité, CSP | À faire |
 
 ## État de reprise
 
 Pour reprendre le travail :
 1. `pnpm install && pnpm setup:pyodide && pnpm test && pnpm build && pnpm test:e2e` doit être vert.
-2. Prochaine tâche : étape 6. Projet transversal « copilote data PME » (Python + SQL + RAG + BI), mode entretien complet (le tuteur pose déjà une question d'entretien par notion), portfolio exportable.
+2. Prochaine tâche : étape 7. Comptes et isolation des données (aujourd'hui tout est local au navigateur), quotas du tuteur IA par compte, administration des contenus et circuit des signalements, audit d'accessibilité, observabilité, CSP.
 3. Pour essayer le tuteur IA : `pnpm build && ANTHROPIC_API_KEY=… pnpm serve` (ou `SKILLFORGE_TUTEUR=simule pnpm serve` sans clé), puis http://localhost:8787.
 4. Le contenu SQL restant du module B (DISTINCT, CASE, sous-requêtes, CTE, fenêtres) et le module A (modélisation, 3FN) se rédigent sur le modèle de `src/content/sql/*.ts` ; le moteur et le comparateur sont prêts.
+
+## Dette identifiée à l'étape 6
+- Entretien : l'écrit est relu par repères textuels (approximatif, annoncé) ; un retour du tuteur IA sur les réponses écrites serait utile, toujours séparé de la mesure.
+- Le tableau de bord du projet transversal reste en auto-évaluation (outil de BI externe).
+- Le portfolio ne contient pas encore de fichiers de code par projet (l'export Markdown de chaque projet les contient).
+- Projet Python de domaine (« pipeline d'import ») : le projet transversal en couvre l'essentiel, sans projet dédié.
 
 ## Dette identifiée à l'étape 5
 - Le laboratoire RAG utilise toujours le modèle simulé : brancher la génération sur `/api` (même serveur, même règles) est simple mais doit rester optionnel.

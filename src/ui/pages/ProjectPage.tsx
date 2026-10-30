@@ -8,9 +8,10 @@ import { Workbench } from "../components/Workbench";
 import { Sandbox, SqlSandbox } from "../components/Sandbox";
 import { domainById } from "../../content";
 import { SchemaPanel, useSchema } from "../components/SqlParts";
+import { evaluationCopilote, fieldKey, journalKey, stepStatus, verifiableSteps, type StepStatus } from "../../domain/projects";
 
 export const projectHref = (projectId: string, stepId?: string) => `#/projet/${projectId}${stepId ? `/${stepId}` : ""}`;
-export const journalKey = (projectId: string, stepId: string) => `journal:${projectId}:${stepId}`;
+export { journalKey };
 export interface ProjectResume {
   projectId: string;
   stepId?: string;
@@ -38,7 +39,7 @@ function Relations() {
 }
 
 /** Champ de journal sauvegardé automatiquement (une clé par étape : deux onglets ne s'écrasent qu'au niveau d'une étape). */
-function JournalField({ projectId, stepId, label, rows = 4 }: { projectId: string; stepId: string; label: string; rows?: number }) {
+function JournalField({ projectId, stepId, label, rows = 4, onSaved }: { projectId: string; stepId: string; label: string; rows?: number; onSaved?: (key: string, text: string) => void }) {
   const { store } = useApp();
   const key = journalKey(projectId, stepId);
   const [text, setText] = useState<string | null>(null);
@@ -60,9 +61,10 @@ function JournalField({ projectId, stepId, label, rows = 4 }: { projectId: strin
       const at = new Date().toISOString();
       await store.set(key, { text, at });
       setSaved(at);
+      onSaved?.(key, text);
     }, 600);
     return () => clearTimeout(t);
-  }, [text, key, store]);
+  }, [text, key, store]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <label className="field">
@@ -129,8 +131,15 @@ export function ProjectPage({ route }: { route: Route }) {
   const project = projectById.get(projectId);
   const { store, data, sqlRunner, toast } = useApp();
   const step = project?.steps.find((s) => s.id === stepId);
-  const exercise = step ? exerciseById.get(step.exerciseId) : undefined;
+  const exercise = step?.exerciseId ? exerciseById.get(step.exerciseId) : undefined;
   const [exporting, setExporting] = useState(false);
+  // Textes des étapes de rédaction (pour leur statut « rédigée »), relus au chargement puis tenus à jour.
+  const [written, setWritten] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (!project) return;
+    const keys = project.steps.flatMap((s) => (s.fields ?? []).map((f) => fieldKey(project.id, s.id, f.id)));
+    Promise.all(keys.map(async (k) => [k, (await store.get<{ text: string }>(k))?.text ?? ""] as const)).then((e) => setWritten(Object.fromEntries(e)));
+  }, [store, project]);
   const [mobileTab, setMobileTab] = useState<"cours" | "atelier">("cours");
 
   useEffect(() => {
@@ -145,15 +154,31 @@ export function ProjectPage({ route }: { route: Route }) {
       </div>
     );
 
-  const passed = (exId: string) => data.attempts.some((a) => a.exerciseId === exId && a.status === "passed");
-  const doneCount = project.steps.filter((s) => passed(s.exerciseId)).length;
+  const status = (s: (typeof project.steps)[number]): StepStatus => stepStatus(project, s, data.attempts, written);
+  const doneCount = verifiableSteps(project).filter((s) => status(s) === "verifiee").length;
+  const redaction = project.steps.filter((s) => s.kind === "redaction");
+  const writtenCount = redaction.filter((s) => status(s) === "redigee").length;
+  const onSaved = (k: string, t: string) => setWritten((w) => ({ ...w, [k]: t }));
 
   async function exportMarkdown(p: Project) {
     setExporting(true);
     try {
       const parts: string[] = [`# ${p.title}`, "", `_Export SkillForge AI du ${new Date().toLocaleString("fr-CH")} · projet v${p.version} · données synthétiques « Torréfaction du Léman »._`, "", p.brief, ""];
       for (const s of p.steps) {
-        const ex = exerciseById.get(s.exerciseId);
+        if (s.kind === "redaction") {
+          parts.push(`## ${s.title} (rédaction, non notée)`, "");
+          if (s.evaluation) {
+            parts.push("| Composant | Mesure | Valeur | Preuve |", "| --- | --- | --- | --- |");
+            for (const r of evaluationCopilote(data.attempts)) parts.push(`| ${r.composant} | ${r.mesure} | ${r.valeur ?? "non mesurée"} | ${r.preuve} |`);
+            parts.push("");
+          }
+          for (const f of s.fields ?? []) {
+            const t = (await store.get<{ text: string }>(fieldKey(p.id, s.id, f.id)))?.text?.trim();
+            parts.push(`**${f.label}**`, "", t || "_(pas encore rédigé)_", "");
+          }
+          continue;
+        }
+        const ex = exerciseById.get(s.exerciseId!);
         const ok = data.attempts.filter((a) => a.exerciseId === s.exerciseId && a.status === "passed").sort((a, b) => b.at.localeCompare(a.at))[0];
         const draft = data.drafts.find((d) => d.exerciseId === s.exerciseId);
         const code = ok?.code ?? draft?.code;
@@ -201,10 +226,10 @@ export function ProjectPage({ route }: { route: Route }) {
         </button>
       </div>
       <nav className="lesson-nav" aria-label="Étapes du projet">
-        <div className="eyebrow">Projet {domainById[project.domain].short}</div>
+        <div className="eyebrow">{project.domains ? `Projet transversal · ${project.domains.map((d) => domainById[d].short).join(", ")}` : `Projet ${domainById[project.domain].short}`}</div>
         <div style={{ fontWeight: 650, marginBottom: 4, lineHeight: 1.35 }}>{project.title}</div>
         <p className="small muted" style={{ marginTop: 0 }}>
-          {doneCount}/{project.steps.length} étapes vérifiées
+          {doneCount}/{verifiableSteps(project).length} étapes vérifiées{redaction.length ? ` · ${writtenCount}/${redaction.length} rédigées` : ""}
         </p>
         <ol>
           <li>
@@ -218,11 +243,7 @@ export function ProjectPage({ route }: { route: Route }) {
               <a href={projectHref(project.id, s.id)} aria-current={s.id === step?.id ? "step" : undefined}>
                 <span className="stage-num">{String(k + 1).padStart(2, "0")}</span>
                 <span>{s.title}</span>
-                {passed(s.exerciseId) && (
-                  <span className="stage-check" title="Vérifiée" aria-label="vérifiée">
-                    ✓
-                  </span>
-                )}
+                <StepMark status={status(s)} />
               </a>
             </li>
           ))}
@@ -247,12 +268,31 @@ export function ProjectPage({ route }: { route: Route }) {
             {project.steps.map((s, k) => (
               <option key={s.id} value={s.id}>
                 {k + 1}. {s.title}
-                {passed(s.exerciseId) ? " ✓" : ""}
+                {status(s) === "verifiee" ? " ✓" : status(s) === "redigee" ? " ✎" : ""}
               </option>
             ))}
             <option value="bilan">Bilan et export</option>
           </select>
-          {step && exercise ? (
+          {step && step.kind === "redaction" ? (
+            <>
+              <span className="stage-tag">
+                Étape {project.steps.indexOf(step) + 1}/{project.steps.length} · rédaction
+              </span>
+              <h1>{step.title}</h1>
+              <p>{step.decisionPrompt}</p>
+              {step.evaluation && <EvaluationTable />}
+              {step.id === "s10" && (
+                <p className="small">
+                  Ensuite, rejoue-la à voix haute dans le <a href="#/entretien">mode entretien</a> (format « Expliquer son projet »).
+                </p>
+              )}
+              {(step.fields ?? []).map((f) => (
+                <JournalField key={f.id} projectId={project.id} stepId={`${step.id}.${f.id}`} label={f.label} rows={6} onSaved={onSaved} />
+              ))}
+              <p className="small muted">Étape rédigée, enregistrée automatiquement : elle apparaît dans l'export et le portfolio, mais n'est jamais notée ni comptée comme preuve.</p>
+              <StepPager project={project} step={step} />
+            </>
+          ) : step && exercise ? (
             <>
               <span className="stage-tag">
                 Étape {project.steps.indexOf(step) + 1}/{project.steps.length}
@@ -266,20 +306,7 @@ export function ProjectPage({ route }: { route: Route }) {
                 Ouvrir l'atelier
               </button>
               <JournalField projectId={project.id} stepId={step.id} label={`Journal de décisions — ${step.decisionPrompt}`} />
-              <div className="section-pager">
-                {project.steps.indexOf(step) > 0 ? (
-                  <a className="btn" href={projectHref(project.id, project.steps[project.steps.indexOf(step) - 1].id)}>
-                    ← Étape précédente
-                  </a>
-                ) : (
-                  <a className="btn" href={projectHref(project.id)}>
-                    ← Mandat
-                  </a>
-                )}
-                <a className="btn primary" href={projectHref(project.id, project.steps[project.steps.indexOf(step) + 1]?.id ?? "bilan")}>
-                  {project.steps[project.steps.indexOf(step) + 1] ? "Étape suivante →" : "Bilan et export →"}
-                </a>
-              </div>
+              <StepPager project={project} step={step} />
             </>
           ) : stepId === "bilan" ? (
             <>
@@ -287,7 +314,7 @@ export function ProjectPage({ route }: { route: Route }) {
               <ul className="list-plain">
                 {project.steps.map((s) => (
                   <li key={s.id}>
-                    {passed(s.exerciseId) ? <span className="badge success">✓ vérifiée</span> : <span className="badge">à faire</span>} {s.title}
+                    {status(s) === "verifiee" ? <span className="badge success">✓ vérifiée</span> : status(s) === "redigee" ? <span className="badge">✎ rédigée</span> : <span className="badge">à faire</span>} {s.title}
                   </li>
                 ))}
               </ul>
@@ -332,7 +359,7 @@ export function ProjectPage({ route }: { route: Route }) {
                   <p className="small muted">Tu cocheras ces points dans « Bilan et export » (auto-évaluation).</p>
                 </>
               )}
-              {(project.domain === "sql" || project.domain === "bi") && (
+              {(project.domain === "sql" || project.domain === "bi" || project.domains?.includes("sql")) && (
                 <>
                   <p>Relations entre tables (lues dans les clés étrangères de la base) :</p>
                   <Relations />
@@ -358,6 +385,75 @@ export function ProjectPage({ route }: { route: Route }) {
       <aside className="atelier" aria-label="Atelier pratique">
         {exercise ? <Workbench key={exercise.id} exercise={exercise} /> : project.domain === "sql" || project.domain === "bi" ? <SqlSandbox /> : <Sandbox />}
       </aside>
+    </div>
+  );
+}
+
+function StepMark({ status }: { status: StepStatus }) {
+  if (status === "verifiee")
+    return (
+      <span className="stage-check" title="Vérifiée" aria-label="vérifiée">
+        ✓
+      </span>
+    );
+  if (status === "redigee")
+    return (
+      <span className="stage-check" title="Rédigée" aria-label="rédigée">
+        ✎
+      </span>
+    );
+  return null;
+}
+
+function StepPager({ project, step }: { project: Project; step: Project["steps"][number] }) {
+  const k = project.steps.indexOf(step);
+  return (
+    <div className="section-pager">
+      {k > 0 ? (
+        <a className="btn" href={projectHref(project.id, project.steps[k - 1].id)}>
+          ← Étape précédente
+        </a>
+      ) : (
+        <a className="btn" href={projectHref(project.id)}>
+          ← Mandat
+        </a>
+      )}
+      <a className="btn primary" href={projectHref(project.id, project.steps[k + 1]?.id ?? "bilan")}>
+        {project.steps[k + 1] ? "Étape suivante →" : "Bilan et export →"}
+      </a>
+    </div>
+  );
+}
+
+/** Tableau d'évaluation : une valeur n'apparaît que si l'étape qui la produit est vérifiée. */
+function EvaluationTable() {
+  const { data } = useApp();
+  const rows = evaluationCopilote(data.attempts);
+  return (
+    <div className="result-wrap">
+      <table className="result eval-table" data-testid="evaluation">
+        <caption className="small muted" style={{ textAlign: "left" }}>
+          Calculé depuis tes étapes vérifiées : une valeur n'apparaît qu'une fois l'étape réussie.
+        </caption>
+        <thead>
+          <tr>
+            <th>Composant</th>
+            <th>Mesure</th>
+            <th>Valeur mesurée</th>
+            <th>Preuve</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.composant}>
+              <td>{r.composant}</td>
+              <td>{r.mesure}</td>
+              <td>{r.valeur ?? <span className="muted">non mesurée</span>}</td>
+              <td className="small">{r.preuve}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

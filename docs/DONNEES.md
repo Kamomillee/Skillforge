@@ -49,3 +49,8 @@ Petites listes synthétiques écrites directement dans les énoncés et les test
 
 Le laboratoire BI réutilise la base PME. Chiffres cités dans la leçon et vérifiés par `tests/content/bi.test.ts` : part du café dans le CA = 24,7 % (toutes périodes), 23,9 % (2026), 18,3 % (clients entreprises en 2026) ; commandes du 1er mai 2025 au 22 octobre 2026 (d'où la comparaison sur « 1er mai – 22 octobre »).
 
+
+## Export de la boutique (`import-boutique`, étape 6)
+- 11 lignes **écrites à la main** (`src/content/datasets/import-boutique.ts`), format d'un export de tableur suisse : séparateur `;`, décimales à virgule. Clients, produits et prix sont ceux de la base PME.
+- Anomalies volontaires : un doublon exact (commande 5002), une date au format suisse (5003), une quantité nulle (5004) et une négative (5005), des espaces autour d'une quantité (5006), un client inconnu (5009, client 999). Après nettoyage : 7 lignes, rejets 1 date / 2 quantités / 1 doublon (test dédié).
+- Pour l'étape SQL, les 7 lignes propres sont chargées dans une table **temporaire** `import_ventes`, recréée avant chaque exécution et chaque vérification (champ `setup` de l'exercice), puis annulée avec la transaction.
