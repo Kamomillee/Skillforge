@@ -131,7 +131,7 @@ export function Dashboard() {
                   <span>
                     <strong>{p.title}</strong>{" "}
                     <span className="small muted">
-                      · {started ? `en cours, ${done}/${p.steps.length} requêtes vérifiées` : "pas encore commencé"}
+                      · {started ? `en cours, ${done}/${p.steps.length} étapes vérifiées` : "pas encore commencé"}
                     </span>
                   </span>
                   <a className="btn sm" href={href}>

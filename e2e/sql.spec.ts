@@ -88,10 +88,10 @@ test("projet PME : étape vérifiée, journal sauvegardé, reprise et export Mar
 
   await page.reload();
   await expect(page.getByTestId("journal-p2")).toHaveValue(/retours non déduits/);
-  await expect(page.locator(".lesson-nav").getByText("1/5 requêtes vérifiées")).toBeVisible();
+  await expect(page.locator(".lesson-nav").getByText("1/5 étapes vérifiées")).toBeVisible();
 
   await page.goto("/#/tableau");
-  await expect(page.getByTestId("dash-projects")).toContainText("en cours, 1/5 requêtes vérifiées");
+  await expect(page.getByTestId("dash-projects")).toContainText("en cours, 1/5 étapes vérifiées");
   await page.getByTestId("dash-projects").getByRole("link", { name: "Reprendre" }).click();
   await expect(page.locator(".wb-head h2")).toHaveText("Chiffre d'affaires mensuel 2026");
 

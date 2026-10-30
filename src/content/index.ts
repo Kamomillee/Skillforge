@@ -4,14 +4,15 @@ import { exercisesSelect, lessonSelect } from "./sql/requetes";
 import { exercisesAgregations, lessonAgregations } from "./sql/agregations";
 import { exercisesJointures, lessonJointures } from "./sql/jointures";
 import { exercisesProjetPme, projetPme } from "./sql/projet-pme";
+import { exercisesMlEvaluation, exercisesProjetChurn, lessonMlEvaluation, projetChurn } from "./ml/evaluation";
 
 export * from "./types";
 export { curriculum, domainById, allNotions, moduleById, coverageStats, moduleDependencies } from "./curriculum";
 
-export const lessons: Lesson[] = [lessonBoucles, lessonSelect, lessonAgregations, lessonJointures];
-export const projects: Project[] = [projetPme];
+export const lessons: Lesson[] = [lessonBoucles, lessonSelect, lessonAgregations, lessonJointures, lessonMlEvaluation];
+export const projects: Project[] = [projetPme, projetChurn];
 export const exercises: Exercise[] = [
-  ...exercisesBoucles.map((e) => pythonExerciseSchema.parse(e)),
+  ...[...exercisesBoucles, ...exercisesMlEvaluation, ...exercisesProjetChurn].map((e) => pythonExerciseSchema.parse(e)),
   ...[...exercisesSelect, ...exercisesAgregations, ...exercisesJointures, ...exercisesProjetPme].map((e) => sqlExerciseSchema.parse(e)),
 ];
 

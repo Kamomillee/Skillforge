@@ -5,7 +5,8 @@ import { useApp } from "../app-context";
 import type { Route } from "../router";
 import { Md } from "../Md";
 import { Workbench } from "../components/Workbench";
-import { SqlSandbox } from "../components/Sandbox";
+import { Sandbox, SqlSandbox } from "../components/Sandbox";
+import { domainById } from "../../content";
 import { SchemaPanel, useSchema } from "../components/SqlParts";
 
 export const projectHref = (projectId: string, stepId?: string) => `#/projet/${projectId}${stepId ? `/${stepId}` : ""}`;
@@ -126,11 +127,14 @@ export function ProjectPage({ route }: { route: Route }) {
         const journal = (await store.get<{ text: string }>(journalKey(p.id, s.id)))?.text?.trim();
         parts.push(`## ${s.title}`, "", ex ? ex.prompt : "", "");
         parts.push(`**Statut :** ${ok ? `vérifiée (toutes les vérifications passent, v${ok.exerciseVersion}, ${new Date(ok.at).toLocaleDateString("fr-CH")})` : code ? "brouillon non validé" : "non commencée"}`, "");
-        if (code) {
+        if (code && ex?.language === "sql") {
           parts.push("```sql", code.trim(), "```", "");
           const r = await sqlRunner.query(code, 8000, 50);
           if (r.outcome?.ok) parts.push("Résultat :", "", mdTable(r.outcome.result), "");
           else if (r.outcome) parts.push(`Résultat : erreur PostgreSQL — ${r.outcome.error.message}`, "");
+        } else if (code) {
+          parts.push("```python", code.trim(), "```", "");
+          if (ok) parts.push(`Vérifications : ${ok.passedCount}/${ok.total} (dont ${ok.hiddenPassed}/${ok.hiddenTotal} cachées).`, "");
         }
         parts.push(`**Décision — ${s.decisionPrompt}**`, "", journal || "_(pas encore rédigée)_", "");
       }
@@ -160,10 +164,10 @@ export function ProjectPage({ route }: { route: Route }) {
         </button>
       </div>
       <nav className="lesson-nav" aria-label="Étapes du projet">
-        <div className="eyebrow">Projet SQL</div>
+        <div className="eyebrow">Projet {domainById[project.domain].short}</div>
         <div style={{ fontWeight: 650, marginBottom: 4, lineHeight: 1.35 }}>{project.title}</div>
         <p className="small muted" style={{ marginTop: 0 }}>
-          {doneCount}/{project.steps.length} requêtes vérifiées
+          {doneCount}/{project.steps.length} étapes vérifiées
         </p>
         <ol>
           <li>
@@ -266,7 +270,7 @@ export function ProjectPage({ route }: { route: Route }) {
                 {exporting ? "Préparation…" : "Exporter en Markdown"}
               </button>
               <p className="small muted">
-                L'export contient tes requêtes (la dernière version vérifiée, sinon ton brouillon, signalé comme tel), leur résultat recalculé maintenant par PostgreSQL et ton
+                L'export contient ton code (la dernière version vérifiée, sinon ton brouillon, signalé comme tel), le résultat des requêtes SQL recalculé maintenant par PostgreSQL et ton
                 journal. Aucune note globale n'est calculée : les critères ci-dessus se vérifient à la lecture.
               </p>
             </>
@@ -282,12 +286,17 @@ export function ProjectPage({ route }: { route: Route }) {
                 ))}
               </ul>
               <h2>Les données</h2>
-              <p>Relations entre tables (lues dans les clés étrangères de la base) :</p>
-              <Relations />
-              <details className="schema-details" open>
-                <summary>Tables, colonnes et aperçu</summary>
-                <SchemaPanel />
-              </details>
+              {project.data && <Md text={project.data} />}
+              {project.domain === "sql" && (
+                <>
+                  <p>Relations entre tables (lues dans les clés étrangères de la base) :</p>
+                  <Relations />
+                  <details className="schema-details" open>
+                    <summary>Tables, colonnes et aperçu</summary>
+                    <SchemaPanel />
+                  </details>
+                </>
+              )}
               <div className="section-pager">
                 <span />
                 <a className="btn primary" href={projectHref(project.id, project.steps[0].id)}>
@@ -302,7 +311,7 @@ export function ProjectPage({ route }: { route: Route }) {
       <div className="splitter static" aria-hidden="true" />
 
       <aside className="atelier" aria-label="Atelier pratique">
-        {exercise ? <Workbench key={exercise.id} exercise={exercise} /> : <SqlSandbox />}
+        {exercise ? <Workbench key={exercise.id} exercise={exercise} /> : project.domain === "sql" || project.domain === "bi" ? <SqlSandbox /> : <Sandbox />}
       </aside>
     </div>
   );

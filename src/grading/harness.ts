@@ -49,6 +49,16 @@ def _sf_equal(got, expected, mode, tol):
     if isinstance(got, bool) != isinstance(expected, bool):
         return False
     if mode == "approx":
+        # Tolérance appliquée à chaque nombre, y compris dans des listes et dictionnaires
+        # (tableaux NumPy acceptés : ils sont convertis en listes).
+        if hasattr(got, "tolist") and not isinstance(got, (int, float)):
+            got = got.tolist()
+        if isinstance(expected, list):
+            if isinstance(got, tuple):
+                got = list(got)
+            return isinstance(got, list) and len(got) == len(expected) and all(_sf_equal(g, e, mode, tol) for g, e in zip(got, expected))
+        if isinstance(expected, dict):
+            return isinstance(got, dict) and set(got) == set(expected) and all(_sf_equal(got[k], expected[k], mode, tol) for k in expected)
         if not isinstance(got, (int, float)):
             return False
         return math.isclose(got, expected, rel_tol=0.0, abs_tol=tol)

@@ -1616,3 +1616,53 @@ a.card-link:hover {
     clip: rect(0 0 0 0);
   }
 }
+
+/* ---------- Seuil (ML) ---------- */
+.score-strip {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.score-strip .score {
+  font: 0.75rem var(--font-mono);
+  border: 1px dashed var(--line-strong);
+  border-radius: 4px;
+  padding: 2px 5px;
+  background: var(--surface-2);
+}
+.score-strip .score.contacte {
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+}
+.score-strip .score[data-cut="true"] {
+  margin-left: 10px;
+  box-shadow: -8px 0 0 -6px var(--ink);
+}
+.threshold-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-3);
+  align-items: start;
+}
+@media (max-width: 700px) {
+  .threshold-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.metrics {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  margin: 0;
+  font-size: 0.88rem;
+}
+.metrics dt {
+  color: var(--ink-3);
+}
+.metrics dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}

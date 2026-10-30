@@ -223,6 +223,73 @@ const implemented: Record<string, Partial<Notion>> = {
     ],
     "project": "Base de données d'une PME (projet SQL) : réponses vérifiées aux questions de la direction, journal de décisions, export Markdown."
 },
+  "ml.d.matrice-de-confusion": {
+    "status": "disponible",
+    "objective": "Classer chaque prédiction en VP, FP, FN, VN et relier chaque case à sa conséquence métier.",
+    "activities": [
+        "Association situations → cases",
+        "Visualisation du seuil",
+        "Exercice guidé",
+        "Base de comparaison (projet)"
+    ],
+    "evaluation": "Fonctions Python vérifiées par tests visibles et cachés (Pyodide) ; valeurs du projet recalculées avec scikit-learn 1.8 dans le navigateur.",
+    "prerequisites": [],
+    "lessonIds": [
+        "ml-evaluer-classifieur"
+    ],
+    "project": "Prédiction du départ de clients (projet ML) : base de comparaison, régression logistique, seuil chiffré par le coût."
+},
+  "ml.d.precision-rappel-et-f1": {
+    "status": "disponible",
+    "objective": "Calculer précision, rappel et F1 à un seuil donné, cas limites compris, et les retrouver avec scikit-learn.",
+    "activities": [
+        "Démonstration scikit-learn exécutable",
+        "Exercice autonome avec cas cachés",
+        "Débogage (F1)"
+    ],
+    "evaluation": "Fonctions Python vérifiées par tests visibles et cachés (Pyodide) ; valeurs du projet recalculées avec scikit-learn 1.8 dans le navigateur.",
+    "prerequisites": [
+        "ml.d.matrice-de-confusion"
+    ],
+    "lessonIds": [
+        "ml-evaluer-classifieur"
+    ],
+    "project": "Prédiction du départ de clients (projet ML) : base de comparaison, régression logistique, seuil chiffré par le coût."
+},
+  "ml.d.choix-d-un-seuil": {
+    "status": "disponible",
+    "objective": "Faire varier un seuil de décision et décrire l'arbitrage précision / rappel.",
+    "activities": [
+        "Visualisation du seuil (balayage animé, version texte)",
+        "Exercice autonome",
+        "Test de validation"
+    ],
+    "evaluation": "Fonctions Python vérifiées par tests visibles et cachés (Pyodide) ; valeurs du projet recalculées avec scikit-learn 1.8 dans le navigateur.",
+    "prerequisites": [
+        "ml.d.precision-rappel-et-f1"
+    ],
+    "lessonIds": [
+        "ml-evaluer-classifieur"
+    ],
+    "project": "Prédiction du départ de clients (projet ML) : base de comparaison, régression logistique, seuil chiffré par le coût."
+},
+  "ml.d.cout-metier-des-erreurs": {
+    "status": "disponible",
+    "objective": "Choisir le seuil qui minimise un coût métier explicite et en exposer les limites.",
+    "activities": [
+        "Visualisation avec coûts modifiables",
+        "Test de validation",
+        "Recommandation chiffrée (projet)"
+    ],
+    "evaluation": "Fonctions Python vérifiées par tests visibles et cachés (Pyodide) ; valeurs du projet recalculées avec scikit-learn 1.8 dans le navigateur.",
+    "prerequisites": [
+        "ml.d.choix-d-un-seuil"
+    ],
+    "lessonIds": [
+        "ml-evaluer-classifieur"
+    ],
+    "project": "Prédiction du départ de clients (projet ML) : base de comparaison, régression logistique, seuil chiffré par le coût."
+},
 };
 
 const domains: Domain[] = [
@@ -581,8 +648,8 @@ const domains: Domain[] = [
     description: "Préparer, entraîner, valider et évaluer des modèles avec rigueur : baseline, fuite de données, métriques adaptées au coût métier.",
     project: {
       title: "Prédiction du départ de clients",
-      summary: "Comparaison à une baseline, métriques adaptées, choix d'un seuil et analyse des erreurs.",
-      status: "prevu",
+      summary: "Comparaison à une baseline, régression logistique (scikit-learn), choix d'un seuil par le coût des erreurs. L'analyse détaillée des erreurs et la préparation des variables sont prévues.",
+      status: "disponible",
     },
     plannedVisualizations: [
       "Droite de régression manipulable",

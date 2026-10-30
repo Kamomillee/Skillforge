@@ -27,8 +27,12 @@ interface Pending {
   resolve: (r: { msg: Done | null; stopReason?: StopReason }) => void;
   onStdout?: (t: string) => void;
   timer: ReturnType<typeof setTimeout>;
+  timeoutMs: number;
   stopReason?: StopReason;
 }
+
+/** Plafond du chargement des paquets (scikit-learn ≈ 30 Mo) : au-delà, on considère le réseau en échec. */
+const PACKAGE_LOAD_LIMIT_MS = 120_000;
 
 /**
  * Client du worker Python. Un seul programme à la fois ; limite de temps ;
@@ -99,6 +103,11 @@ export class PythonRunner {
     if (m.type === "status") return this.setState({ kind: "busy", message: m.message });
     const p = this.pending;
     if (!p || !("id" in m) || m.id !== p.id) return;
+    if (m.type === "packages") {
+      clearTimeout(p.timer);
+      p.timer = setTimeout(() => this.stop("timeout"), m.phase === "start" ? PACKAGE_LOAD_LIMIT_MS : p.timeoutMs);
+      return;
+    }
     if (m.type === "stdout") return p.onStdout?.(m.text);
     if (m.type === "stdout-truncated") return p.onStdout?.("[… sortie tronquée après 50 000 caractères]");
     this.finish(p, m);
@@ -144,7 +153,7 @@ export class PythonRunner {
     const started = performance.now();
     const res = await new Promise<{ msg: Done | null; stopReason?: StopReason }>((resolve) => {
       const timer = setTimeout(() => this.stop("timeout"), timeoutMs);
-      this.pending = { id, kind, resolve, onStdout, timer };
+      this.pending = { id, kind, resolve, onStdout, timer, timeoutMs };
       this.worker!.postMessage({ type: kind, id, code: payload.code, packages: payload.packages, spec: payload.spec ?? "" } as ToWorker);
     });
     return { ...res, durationMs: Math.round(performance.now() - started) };

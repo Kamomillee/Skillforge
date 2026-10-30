@@ -152,6 +152,19 @@ export const misconceptionLabels: Record<string, string> = {
   "valeur-codee-en-dur": "Valeur codée en dur au lieu d'être calculée",
   "group-by-granularite": "Mauvaise granularité du GROUP BY",
   "division-entiere": "Division entière qui tronque un taux",
+  // ML
+  "seuil-strict": "Seuil appliqué avec > au lieu de >= (ou l'inverse)",
+  "vp-fp-inverses": "Faux positifs et faux négatifs inversés",
+  "moyenne-arithmetique": "Moyenne arithmétique au lieu de la moyenne harmonique (F1)",
+  "exactitude-trompeuse": "Exactitude élevée obtenue en prédisant toujours la classe majoritaire",
+  "egalite-de-cout": "Égalité de coût mal départagée",
+  // LLM
+  "chevauchement": "Chevauchement des morceaux mal appliqué",
+  "dernier-morceau": "Dernier morceau (plus court) oublié",
+  "budget-depasse": "Budget de contexte dépassé",
+  "ordre-pertinence": "Passages non triés par pertinence",
+  "abstention-absente": "Répond même quand aucun passage n'est pertinent",
+  "casse-ponctuation": "Mots comparés sans normaliser la casse ou la ponctuation",
 };
 
 // ---------- Leçons ----------
@@ -168,7 +181,17 @@ export interface TraceStep {
 export type LessonBlock =
   | { type: "text"; md: string }
   | { type: "callout"; tone: "info" | "warning" | "success"; title: string; md: string }
-  | { type: "code"; code: string; language?: "python" | "sql"; runnable?: boolean; caption?: string }
+  | {
+      type: "code";
+      code: string;
+      language?: "python" | "sql";
+      runnable?: boolean;
+      caption?: string;
+      packages?: string[];
+      /** Code exécuté avant l'exemple sans être affiché (données préchargées), sur une seule ligne. */
+      prelude?: string;
+    }
+  | { type: "threshold-viz"; title: string }
   | { type: "trace"; title: string; code: string; steps: TraceStep[] }
   | {
       type: "prediction";
@@ -305,6 +328,8 @@ export interface Project {
   title: string;
   summary: string;
   brief: string;
+  /** Description des données (projets hors SQL ; le schéma SQL est lu dans la base). */
+  data?: string;
   deliverables: string[];
   acceptance: string[];
   steps: ProjectStep[];

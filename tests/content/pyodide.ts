@@ -18,6 +18,7 @@ export function getPyodide() {
 
 export async function grade(ex: PythonExercise, code: string) {
   const p = await getPyodide();
+  if (ex.packages.length) await p.loadPackage(ex.packages, { messageCallback: () => {} });
   const fn = p.globals.get("sf_grade");
   const raw = JSON.parse(fn(code, gradingSpec(ex))) as RawGradeResult;
   fn.destroy();

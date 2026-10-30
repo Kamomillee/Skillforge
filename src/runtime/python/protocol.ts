@@ -10,6 +10,8 @@ export type FromWorker =
   | { type: "ready"; version: string; pythonVersion: string; loadMs: number }
   | { type: "init-error"; message: string }
   | { type: "status"; message: string }
+  /** Début / fin du chargement de paquets : la limite de temps de l'exercice ne court pas pendant ce chargement. */
+  | { type: "packages"; id: number; phase: "start" | "done" }
   | { type: "stdout"; id: number; text: string }
   | { type: "stdout-truncated"; id: number }
   | { type: "run-done"; id: number; error: PyErrorInfo | null; interrupted: boolean }

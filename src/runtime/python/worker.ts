@@ -55,12 +55,17 @@ del _m
   }
 }
 
-async function ensurePackages(pkgs: string[]) {
+async function ensurePackages(id: number, pkgs: string[]) {
   const missing = pkgs.filter((p) => !loadedPackages.has(p));
   if (!missing.length || !py) return;
-  post({ type: "status", message: `Chargement de ${missing.join(", ")}…` });
-  await py.loadPackage(missing, { messageCallback: () => {} });
-  missing.forEach((p) => loadedPackages.add(p));
+  post({ type: "packages", id, phase: "start" });
+  post({ type: "status", message: `Chargement de ${missing.join(", ")} (une seule fois)…` });
+  try {
+    await py.loadPackage(missing, { messageCallback: () => {} });
+    missing.forEach((p) => loadedPackages.add(p));
+  } finally {
+    post({ type: "packages", id, phase: "done" });
+  }
 }
 
 const isInterrupt = (e: unknown) => e instanceof Error && /KeyboardInterrupt/.test(e.message);
@@ -73,7 +78,7 @@ self.onmessage = async (ev: MessageEvent<ToWorker>) => {
   streamed = 0;
   truncatedSent = false;
   try {
-    await ensurePackages(msg.packages);
+    await ensurePackages(msg.id, msg.packages);
     if (msg.type === "run") {
       const fn = py.globals.get("sf_run");
       try {

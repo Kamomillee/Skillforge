@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useApp } from "./app-context";
 import { useRoute } from "./router";
-import { lessonById } from "../content";
+import { lessonById, projectById } from "../content";
 import { Dashboard } from "./pages/Dashboard";
 import { LessonPage } from "./pages/LessonPage";
 import { Onboarding, Welcome } from "./pages/Onboarding";
@@ -90,7 +90,8 @@ export function App() {
   }, [route.name]);
 
   // Le moteur affiché est celui de la page : PostgreSQL pour le contenu SQL, Python sinon.
-  const sqlPage = (route.name === "lecon" && lessonById.get(route.params[0])?.domain === "sql") || route.name === "projet";
+  const pageDomain = route.name === "lecon" ? lessonById.get(route.params[0])?.domain : route.name === "projet" ? projectById.get(route.params[0])?.domain : undefined;
+  const sqlPage = pageDomain === "sql" || pageDomain === "bi";
   const st = sqlPage ? sqlState : runnerState;
   const engineName = sqlPage ? "PostgreSQL" : "Python";
   const dot = st.kind === "ready" ? "ok" : st.kind === "error" ? "err" : st.kind === "idle" ? "" : "busy";

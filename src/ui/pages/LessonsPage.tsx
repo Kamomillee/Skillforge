@@ -53,7 +53,7 @@ export function LessonsPage() {
                         {p.summary}
                       </p>
                       <span className="small">
-                        {done}/{p.steps.length} requêtes vérifiées
+                        {done}/{p.steps.length} étapes vérifiées
                       </span>
                     </a>
                   );

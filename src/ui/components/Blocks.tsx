@@ -8,6 +8,7 @@ import type { QueryOutcome } from "../../runtime/sql/engine";
 import { ResultTable, SqlErrorCard } from "./SqlParts";
 import { SqlSteps } from "../viz/SqlSteps";
 import { JoinViz } from "../viz/JoinViz";
+import { ThresholdViz } from "../viz/ThresholdViz";
 import { projectById } from "../../content";
 import { ChartQuestion, FillCode, Matching, Ordering } from "./Activities";
 
@@ -111,14 +112,16 @@ export function ExplainBlock({ block, lesson }: { block: ExplainBlockT; lesson: 
   );
 }
 
-export function RunnableCode({ code }: { code: string }) {
+export function RunnableCode({ code, packages = [], prelude }: { code: string; packages?: string[]; prelude?: string }) {
   const { runner, runnerState } = useApp();
   const [out, setOut] = useState<{ text: string; error: PyErrorInfo | null; status: string } | null>(null);
   const busy = runnerState.kind === "busy" || runner.isBusy;
   async function run() {
     setOut({ text: "", error: null, status: "running" });
-    const r = await runner.run(code, { timeoutMs: 5000 });
-    setOut({ text: r.output, error: r.error, status: r.status });
+    // Le prélude tient sur une ligne : les numéros de ligne des erreurs sont décalés de 1, corrigés ci-dessous.
+    const r = await runner.run(prelude ? `${prelude}\n${code}` : code, { timeoutMs: 10_000, packages, onStdout: (t) => setOut((o) => (o ? { ...o, text: o.text + t + "\n" } : o)) });
+    const error = r.error && prelude && r.error.line ? { ...r.error, line: r.error.line - 1 } : r.error;
+    setOut({ text: r.output, error, status: r.status });
   }
   return (
     <div style={{ margin: "12px 0" }}>
@@ -129,11 +132,14 @@ export function RunnableCode({ code }: { code: string }) {
         <button className="btn sm primary" onClick={run} disabled={busy}>
           ▶ Exécuter l'exemple
         </button>
-        <span className="small muted">Exécution réelle dans ton navigateur (Pyodide).</span>
+        <span className="small muted">
+          Exécution réelle dans ton navigateur (Pyodide){packages.length ? ` · charge ${packages.join(", ")} au premier lancement` : ""}.
+        </span>
       </div>
       {out && (
         <div className="console" style={{ marginTop: 8 }} aria-live="polite" data-testid="demo-output">
-          {out.status === "running" ? "Exécution…" : out.text || "(aucune sortie)"}
+          {out.status === "running" ? out.text || (runnerState.kind === "busy" ? runnerState.message : "Exécution…") : out.text || "(aucune sortie)"}
+          {out.status === "timeout" && "\nArrêté : limite de temps dépassée."}
           {out.error && `\n${explainError(out.error).title} : ${out.error.summary}`}
         </div>
       )}
@@ -194,7 +200,7 @@ export function LessonBlockView({ block, lesson, onOpenExercise }: { block: Less
         block.language === "sql" ? (
           <RunnableSql code={block.code} />
         ) : (
-          <RunnableCode code={block.code} />
+          <RunnableCode code={block.code} packages={block.packages} prelude={block.prelude} />
         )
       ) : (
         <>
@@ -208,6 +214,8 @@ export function LessonBlockView({ block, lesson, onOpenExercise }: { block: Less
       return <SqlSteps title={block.title} stages={block.stages} />;
     case "join-viz":
       return <JoinViz title={block.title} />;
+    case "threshold-viz":
+      return <ThresholdViz title={block.title} />;
     case "ordering":
       return <Ordering block={block} lesson={lesson} />;
     case "matching":

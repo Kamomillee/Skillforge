@@ -47,7 +47,7 @@ export function useStepper(count: number) {
   return { i, count, playing, speed, setSpeed, go, toggle, onKey };
 }
 
-export function StepperControls({ s, label = "Position dans la visualisation" }: { s: ReturnType<typeof useStepper>; label?: string }) {
+export function StepperControls({ s, label = "Position dans la visualisation", valueText }: { s: ReturnType<typeof useStepper>; label?: string; valueText?: string }) {
   return (
     <div className="tracer-controls" role="group" aria-label="Contrôles de la visualisation">
       <button className="btn sm" onClick={() => s.go(0)} aria-label="Revenir au début">
@@ -69,7 +69,7 @@ export function StepperControls({ s, label = "Position dans la visualisation" }:
         value={s.i}
         onChange={(e) => s.go(Number(e.target.value))}
         aria-label={label}
-        aria-valuetext={`Étape ${s.i + 1} sur ${s.count}`}
+        aria-valuetext={valueText ?? `Étape ${s.i + 1} sur ${s.count}`}
       />
       <span className="small muted" aria-hidden="true">
         {s.i + 1}/{s.count}

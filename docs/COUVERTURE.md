@@ -11,8 +11,8 @@
 | SQL | 50 | 39 | 0 | 0 | 4 | 7 | Base de données d'une PME (Disponible) |
 | LLM | 69 | 69 | 0 | 0 | 0 | 0 | Assistant documentaire avec citations (Prévu) |
 | BI | 48 | 48 | 0 | 0 | 0 | 0 | Rapport ventes, marges et retours (Prévu) |
-| ML | 55 | 55 | 0 | 0 | 0 | 0 | Prédiction du départ de clients (Prévu) |
-| **Total** | **280** | 268 | 0 | 0 | 4 | 8 | Projet transversal : copilote data PME (Prévu) |
+| ML | 55 | 51 | 0 | 0 | 0 | 4 | Prédiction du départ de clients (Disponible) |
+| **Total** | **280** | 264 | 0 | 0 | 4 | 12 | Projet transversal : copilote data PME (Prévu) |
 
 ## Python pour les données et l'automatisation
 
@@ -307,11 +307,11 @@ Visualisations prévues : Droite de régression manipulable · Frontière de dé
 | C. Modèles | Hyperparamètres | Prévu | — | — | — | Prédiction du départ de clients |
 | C. Modèles | Recherche d'hyperparamètres | Prévu | — | — | — | Prédiction du départ de clients |
 | D. Évaluation | MAE, RMSE et R² | Prévu | — | — | — | Prédiction du départ de clients |
-| D. Évaluation | Matrice de confusion | Prévu | — | — | — | Prédiction du départ de clients |
-| D. Évaluation | Précision, rappel et F1 | Prévu | — | — | — | Prédiction du départ de clients |
+| D. Évaluation | Matrice de confusion | Disponible | Classer chaque prédiction en VP, FP, FN, VN et relier chaque case à sa conséquence métier. | Association situations → cases, Visualisation du seuil, Exercice guidé, Base de comparaison (projet) | Fonctions Python vérifiées par tests visibles et cachés (Pyodide) ; valeurs du projet recalculées avec scikit-learn 1.8 dans le navigateur. | Prédiction du départ de clients (projet ML) : base de comparaison, régression logistique, seuil chiffré par le coût. |
+| D. Évaluation | Précision, rappel et F1 | Disponible | Calculer précision, rappel et F1 à un seuil donné, cas limites compris, et les retrouver avec scikit-learn. | Démonstration scikit-learn exécutable, Exercice autonome avec cas cachés, Débogage (F1) | Fonctions Python vérifiées par tests visibles et cachés (Pyodide) ; valeurs du projet recalculées avec scikit-learn 1.8 dans le navigateur. | Prédiction du départ de clients (projet ML) : base de comparaison, régression logistique, seuil chiffré par le coût. |
 | D. Évaluation | ROC-AUC et précision-rappel | Prévu | — | — | — | Prédiction du départ de clients |
-| D. Évaluation | Choix d'un seuil | Prévu | — | — | — | Prédiction du départ de clients |
-| D. Évaluation | Coût métier des erreurs | Prévu | — | — | — | Prédiction du départ de clients |
+| D. Évaluation | Choix d'un seuil | Disponible | Faire varier un seuil de décision et décrire l'arbitrage précision / rappel. | Visualisation du seuil (balayage animé, version texte), Exercice autonome, Test de validation | Fonctions Python vérifiées par tests visibles et cachés (Pyodide) ; valeurs du projet recalculées avec scikit-learn 1.8 dans le navigateur. | Prédiction du départ de clients (projet ML) : base de comparaison, régression logistique, seuil chiffré par le coût. |
+| D. Évaluation | Coût métier des erreurs | Disponible | Choisir le seuil qui minimise un coût métier explicite et en exposer les limites. | Visualisation avec coûts modifiables, Test de validation, Recommandation chiffrée (projet) | Fonctions Python vérifiées par tests visibles et cachés (Pyodide) ; valeurs du projet recalculées avec scikit-learn 1.8 dans le navigateur. | Prédiction du départ de clients (projet ML) : base de comparaison, régression logistique, seuil chiffré par le coût. |
 | D. Évaluation | Surapprentissage | Prévu | — | — | — | Prédiction du départ de clients |
 | D. Évaluation | Compromis biais-variance | Prévu | — | — | — | Prédiction du départ de clients |
 | D. Évaluation | Courbes d'apprentissage | Prévu | — | — | — | Prédiction du départ de clients |
