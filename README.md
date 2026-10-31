@@ -46,6 +46,16 @@ Cross-Origin-Embedder-Policy: require-corp
 
 `vite dev` et `vite preview` les envoient déjà (voir `vite.config.ts`).
 
+### Déploiement sur Vercel (version statique)
+
+`vercel.json` configure le build (`pnpm build`, sortie `dist/`) et les en-têtes : isolation (COOP/COEP, nécessaires à Pyodide) et la même CSP que le serveur. Pyodide (`public/pyodide/`, 39 Mo) est versionné dans le dépôt : le build ne télécharge rien.
+
+1. Pousser le dépôt sur GitHub.
+2. Sur https://vercel.com/new, importer le dépôt (les réglages sont lus dans `vercel.json`).
+3. Chaque push sur la branche principale redéploie.
+
+Sur Vercel, l'application tourne **en mode local** : cours, exercices, tests, projets, entretien et portfolio fonctionnent, la progression reste dans le navigateur. Les comptes, la synchronisation, le tuteur IA et l'administration demandent le serveur SkillForge (`pnpm serve`, Node avec SQLite), qui ne s'exécute pas sur l'hébergement statique de Vercel ; l'interface l'indique (« Mode local »).
+
 ## Vérifications
 
 ```bash

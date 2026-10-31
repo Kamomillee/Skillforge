@@ -366,3 +366,13 @@ describe("serveur — journaux, en-têtes de sécurité, conservation", () => {
     expect(db.prepare("SELECT COUNT(*) n FROM reports WHERE status = 'nouveau'").get()).toEqual({ n: 1 });
   });
 });
+
+describe("déploiement statique (Vercel)", () => {
+  it("vercel.json envoie la même CSP et les en-têtes d'isolation que le serveur", async () => {
+    const v = (await import("../../vercel.json")).default as { headers: { source: string; headers: { key: string; value: string }[] }[] };
+    const h = Object.fromEntries(v.headers[0].headers.map((x) => [x.key, x.value]));
+    expect(h["Content-Security-Policy"]).toBe(CSP);
+    expect(h["Cross-Origin-Embedder-Policy"]).toBe("require-corp");
+    expect(h["Cross-Origin-Opener-Policy"]).toBe("same-origin");
+  });
+});
